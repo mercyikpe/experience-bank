@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+:root {
+  --background: #faf9fd;
+  --foreground: #192034;
+
+  --ink-value: #192034;
+  --color-shell-from: #fcfbff;
+  --color-shell-via: #f7f7fc;
+  --color-shell-to: #fbfbfe;
+
+  --color-sidebar: #1f2a40;
+  --color-sidebar-fg: #dce1ef;
+  --color-sidebar-muted: #aeb8ca;
+  --color-sidebar-hover: #33415d;
+
+  --color-brand-from: #866cff;
+  --color-brand-to: #5136de;
+
+  --color-primary-from: #6048e8;
+  --color-primary-to: #7961f4;
+
+  --color-accent: #6149e5;
+  --color-accent-2: #5940dc;
+  --color-accent-3: #6953e9;
+  --color-accent-4: #654bea;
+  --color-accent-soft: #998afa;
+
+  --color-border-muted: #e8e8f0;
+  --color-border-soft: #e2e3ec;
+  --color-border-hairline: #efeff4;
+  --color-border-panel: #ececf1;
+
+  --color-muted-fg: #6c7486;
+  --color-subtle-fg: #8b93a4;
+  --color-faint-fg: #949aaa;
+  --color-body-fg: #454d5f;
+
+  --color-tag-bg: #f6f3ff;
+  --color-tag-border: #e5e2f4;
+  --color-tag-fg: #5a48ba;
+  --color-tag-selected: #6851e9;
+  --color-mini-tag-bg: #f4f1fc;
+  --color-mini-tag-fg: #6956b7;
+
+  --color-warning-bg: #fdf1e4;
+  --color-warning-fg: #b3690f;
+  --color-success-bg: #edf9f0;
+  --color-success-fg: #1f9d55;
+  --color-info-bg: #f0eefc;
+  --color-info-fg: #5940dc;
+  --color-danger-fg: #bd3b45;
+  --color-danger-border: #f0cfd2;
+
+  --font-family-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-family-serif: "Fraunces", ui-serif, Georgia, serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--ink-value);
+  --font-sans: var(--font-family-sans);
+  --font-serif: var(--font-family-serif);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(
+    135deg,
+    var(--color-shell-from),
+    var(--color-shell-via) 48%,
+    var(--color-shell-to)
+  );
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  min-width: 320px;
+}
+
+/* Scrollable panels keep their custom scroll areas tidy without a global
+   scrollbar reset that would affect the rest of the app. */
+.scroll-panel {
+  scrollbar-width: thin;
+}
