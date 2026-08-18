@@ -43,3 +43,6 @@ next-env.d.ts
 
 /src/generated/prisma
 client_secret_804356483885-6s9pbu7l297243l683d301397bgtcpfe.apps.googleusercontent.com.json
+
+# local scratch (not part of history)
+/_to_delete
