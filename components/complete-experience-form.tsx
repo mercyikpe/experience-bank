@@ -30,7 +30,7 @@ export function CompleteExperienceForm({
     setDraft((current) => ({ ...current, [key]: value }))
 
   return (
-    <Card className="structure-card mx-auto mb-8 max-w-[760px] p-7">
+    <Card className="structure-card mx-2 mb-8 max-w-[760px] p-7">
       <div className="flex items-center gap-3">
         <div className="grid h-9 w-9 place-items-center rounded-[10px] bg-[linear-gradient(145deg,#7d67ff,#503bd8)] text-white">
           <Sparkles size={17} />

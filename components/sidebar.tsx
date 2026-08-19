@@ -7,11 +7,13 @@ import { cn } from "@/lib/utils"
 export function AppSidebar({
   screen,
   setScreen,
+  onSettingsClick,
 }: {
   screen: Screen
   setScreen: (screen: Screen) => void
+  onSettingsClick: () => void
 }) {
-  const bankActive = screen === "bank" || screen === "detail" || screen === "complete"
+  const bankActive = screen === "bank" || screen === "detail" || screen === "complete" || screen === "star"
 
   return (
     <aside className="m-[20px_20px_20px_0] flex w-[82px] flex-none flex-col items-center rounded-[18px] bg-[var(--color-sidebar)] px-3 py-3.5 text-[var(--color-sidebar-fg)] shadow-[0_14px_28px_#28314d25] max-[900px]:m-[10px_10px_10px_0] max-[900px]:w-[62px] max-[600px]:hidden">
@@ -55,8 +57,12 @@ export function AppSidebar({
       </nav>
       <button
         type="button"
-        aria-label="Settings"
-        className="mt-auto grid h-[42px] w-[42px] place-items-center rounded-[10px] text-[var(--color-sidebar-muted)] transition-colors hover:bg-[var(--color-sidebar-hover)] hover:text-white"
+        onClick={onSettingsClick}
+        aria-label="Your profile"
+        className={cn(
+          "mt-auto grid h-[42px] w-[42px] place-items-center rounded-[10px] text-[var(--color-sidebar-muted)] transition-colors hover:bg-[var(--color-sidebar-hover)] hover:text-white",
+          screen === "onboarding" && "bg-[var(--color-sidebar-hover)] text-white"
+        )}
       >
         <Settings size={20} />
       </button>

@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/data"
 import { getCompletenessFlags, getCompletenessScore } from "@/lib/completeness"
 import type { Experience, StructuredFields } from "@/lib/types"
 import { CompletenessBadges } from "@/components/completeness-badges"
+import { StarStoryList } from "@/components/star-story-list"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -29,11 +30,17 @@ export function ExperienceDetail({
   onEdit,
   onDelete,
   onComplete,
+  onCreateStar,
+  onEditStar,
+  onDeleteStar,
 }: {
   experience?: Experience
   onEdit: () => void
   onDelete: () => void
   onComplete: () => void
+  onCreateStar: () => void
+  onEditStar: (id: string) => void
+  onDeleteStar: (id: string) => void
 }) {
   if (!experience) {
     return (
@@ -77,6 +84,13 @@ export function ExperienceDetail({
             </div>
           ))}
         </div>
+
+        <StarStoryList
+          stories={experience.starStories || []}
+          onCreate={onCreateStar}
+          onEdit={onEditStar}
+          onDelete={onDeleteStar}
+        />
 
         <details className="mt-6 border-t border-[var(--color-border-hairline)] pt-[18px]">
           <summary className="cursor-pointer text-xs font-bold text-[var(--color-muted-fg)]">

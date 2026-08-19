@@ -1,4 +1,4 @@
-import type { CompletionDraft, Draft, Experience } from "./types"
+import type { CompletionDraft, Draft, Experience, StarDraft, UserProfile } from "./types"
 
 export const tags = [
   "Leadership",
@@ -83,6 +83,12 @@ export const emptyCompletion: CompletionDraft = {
   collaborators: "",
   ...emptyMetadata,
 }
+
+export const blankStarDraft: StarDraft = { theme: "", situation: "", task: "", action: "", result: "" }
+
+export const blankProfile: UserProfile = { name: "", currentRole: "", workHistory: [] }
+
+export const blankWorkHistoryRow = () => ({ id: "", company: "", title: "", startDate: "", endDate: null as string | null })
 
 export const formatDate = (date?: string) =>
   date
