@@ -19,14 +19,42 @@ function toISODate(date: Date): string {
   return date.toISOString().slice(0, 10)
 }
 
-/** Short label from the raw capture — first sentence, trimmed to a
- * reasonable length. Never invents content that isn't in the text. */
+// Verbs that signal "this is the part where something actually happened,"
+// as opposed to scene-setting ("At Shopify, I noticed…") or narration
+// ("It turned out that…"). Used to pick which sentence becomes the title
+// when a capture opens with context before it gets to the point — matched
+// with \w* so conjugations (led/leads/leading, resolve/resolved/resolving)
+// all count without listing every form.
+const ACTION_VERB_PATTERN =
+  /\b(led|resolv\w*|fix\w*|built|build|launch\w*|implement\w*|reduc\w*|improv\w*|migrat\w*|negotiat\w*|mentor\w*|design\w*|own\w*|ship\w*|optimi[sz]\w*|prevent\w*|coordinat\w*|drove|drive|deliver\w*|redesign\w*|automat\w*|scal\w*|refactor\w*|debug\w*|diagnos\w*|investigat\w*|propos\w*|present\w*|onboard\w*|train\w*|hir\w*|promot\w*|sav\w*|increas\w*|decreas\w*|grew|creat\w*|develop\w*|architect\w*|spearhead\w*|streamlin\w*|eliminat\w*|boost\w*|cut|rework\w*|wrote|write|manage\w*|handl\w*|solv\w*)\b/i
+
+/** Short label from the raw capture. Prefers the sentence that describes
+ * the actual action taken — not just the first sentence, since captures
+ * often open with context ("At Shopify, I noticed…") before getting to
+ * what was actually done. Also drops a leading scene-setting clause within
+ * that sentence when the action lives after the first comma. Never invents
+ * content that isn't in the text — this only reorders/trims what's there. */
 export function inferTitle(description: string): string {
   const text = description.trim()
   if (!text) return ""
 
-  const firstSentence = text.match(/^[^.!?\n]+[.!?]?/)
-  let title = (firstSentence ? firstSentence[0] : text).trim().replace(/[.!?]+$/, "")
+  const sentences = (text.match(/[^.!?\n]+[.!?]?/g) || [text]).map((s) => s.trim()).filter(Boolean)
+  const actionSentence = sentences.find((sentence) => ACTION_VERB_PATTERN.test(sentence))
+  let title = (actionSentence || sentences[0]).replace(/[.!?]+$/, "").trim()
+
+  // "Instead of waiting for someone else, I took ownership…" → drop the
+  // lead-in and start from "I took ownership…" when the clause before the
+  // first comma isn't itself where the action is.
+  const commaIndex = title.indexOf(", ")
+  if (commaIndex > 0 && commaIndex < 60) {
+    const lead = title.slice(0, commaIndex)
+    const rest = title.slice(commaIndex + 2)
+    if (!ACTION_VERB_PATTERN.test(lead) && ACTION_VERB_PATTERN.test(rest)) {
+      title = rest
+    }
+  }
+
+  title = title.charAt(0).toUpperCase() + title.slice(1)
 
   const MAX_LENGTH = 70
   if (title.length > MAX_LENGTH) {
@@ -35,7 +63,7 @@ export function inferTitle(description: string): string {
     title = (lastSpace > 40 ? truncated.slice(0, lastSpace) : truncated).trim() + "…"
   }
 
-  return title.charAt(0).toUpperCase() + title.slice(1)
+  return title
 }
 
 /** Picks up explicit dates/timeframes mentioned in the text (month names,

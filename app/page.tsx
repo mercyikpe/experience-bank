@@ -14,6 +14,7 @@ import { ExperienceDetail } from "@/components/experience-detail"
 import { CompleteExperienceForm } from "@/components/complete-experience-form"
 import { StarStoryForm } from "@/components/star-story-form"
 import { OnboardingForm } from "@/components/onboarding-form"
+import { ProfileView } from "@/components/profile-view"
 import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
 
@@ -99,8 +100,10 @@ export default function Home() {
     // deterministic auto-fill guesses title/date/tags/company from the raw
     // text. Edits come from the full form, which already collects every
     // field explicitly, so those are used as typed instead of re-guessed.
+    // Editing is an implicit confirmation of everything in that form, so it
+    // clears any "AI guessed this" flags from a previous auto-fill pass.
     const item = editingId
-      ? { ...draft, id }
+      ? { ...draft, id, aiSuggestedFields: [] }
       : (() => {
           const auto = autoFillExperience(draft.description, profile)
           return {
@@ -110,6 +113,12 @@ export default function Home() {
             date: auto.date,
             tags: auto.tags,
             ...(auto.metadata ? { metadata: auto.metadata } : {}),
+            aiSuggestedFields: [
+              "title",
+              "date",
+              ...(auto.tags.length ? ["tags"] : []),
+              ...(auto.metadata ? ["company"] : []),
+            ],
           }
         })()
     setExperiences((current) =>
@@ -280,13 +289,44 @@ export default function Home() {
     notify("Experience deleted")
   }
 
+  // A lightweight correction path for a wrong (or missing) AI company match
+  // — lets someone fix it right from the detail view instead of routing
+  // through the full "Complete this experience" flow just to change one
+  // field. Also clears the "AI guessed this" flag, since a manual edit is
+  // itself the confirmation.
+  const updateCompany = (company: string) => {
+    if (!selected) return
+    setExperiences((current) =>
+      current.map((item) =>
+        item.id !== selected.id
+          ? item
+          : {
+              ...item,
+              metadata: { ...item.metadata, company },
+              aiSuggestedFields: (item.aiSuggestedFields || []).filter((field) => field !== "company"),
+            }
+      )
+    )
+    notify("Company updated")
+  }
+
   // Onboarding is optional and never gates capture — it's reachable any time
-  // via the sidebar settings icon, or via the Career Bank nudge below, and
-  // always opens with whatever profile already exists so it doubles as an
-  // edit screen, not just a first-run wizard.
+  // via the sidebar settings icon (through the profile page), or via the
+  // Career Bank nudge below, and always opens with whatever profile already
+  // exists so it doubles as an edit screen, not just a first-run wizard.
   const startOnboarding = () => {
     setProfileDraft(profile)
     setScreen("onboarding")
+  }
+
+  // The sidebar settings icon lands here — a read view of the profile and
+  // work history, with entries grouped under whichever company they're
+  // matched to. Editing happens through the same onboarding form as before.
+  const startProfile = () => setScreen("profile")
+
+  const viewExperienceFromProfile = (id: string) => {
+    setSelectedId(id)
+    setScreen("detail")
   }
 
   const setProfileField = (field: "name" | "currentRole", value: string) =>
@@ -310,7 +350,7 @@ export default function Home() {
   const saveProfile = (event: React.FormEvent) => {
     event.preventDefault()
     setProfile(profileDraft)
-    setScreen("bank")
+    setScreen("profile")
     notify("Profile saved")
   }
 
@@ -321,7 +361,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen">
-      <AppSidebar screen={screen} setScreen={setScreen} onSettingsClick={startOnboarding} />
+      <AppSidebar screen={screen} setScreen={setScreen} onSettingsClick={startProfile} />
       <main className="mx-auto w-[min(1360px,calc(100%-122px))] px-3 pt-[54px] pb-[60px] max-[900px]:w-[calc(100%-82px)] max-[900px]:pt-8 max-[600px]:w-full max-[600px]:px-3.5 max-[600px]:pt-6">
         <header className="mx-2 mb-8 flex items-start justify-between gap-[30px] max-[600px]:block max-[600px]:mb-[22px]">
           <div>
@@ -372,7 +412,16 @@ export default function Home() {
             updateRow={updateWorkHistoryRow}
             removeRow={removeWorkHistoryRow}
             onSave={saveProfile}
-            onCancel={() => setScreen("bank")}
+            onCancel={() => setScreen(profile.name || profile.workHistory.length ? "profile" : "bank")}
+          />
+        )}
+
+        {screen === "profile" && (
+          <ProfileView
+            profile={profile}
+            experiences={experiences}
+            onEdit={startOnboarding}
+            onSelectExperience={viewExperienceFromProfile}
           />
         )}
 
@@ -408,15 +457,14 @@ export default function Home() {
         )}
 
         {screen === "bank" && (
-          <section className="mx-2 grid max-w-240 grid-cols-1" aria-label="Experience capture workspace">
+          <section className="mx-2 grid max-w-[960px] grid-cols-1" aria-label="Experience capture workspace">
             {!profile.workHistory.length && !nudgeDismissed && (
-              <div className="mb-4 md:flex items-center gap-3 rounded-xl border border-[var(--color-tag-border)] bg-[var(--color-tag-bg)] px-4 py-3">
+              <div className="mb-4 flex items-center gap-3 rounded-[12px] border border-[var(--color-tag-border)] bg-[var(--color-tag-bg)] px-4 py-3">
                 <p className="m-0 flex-1 text-[13px] text-[var(--color-tag-fg)]">
                   Add your work history so entries can be matched to where they happened — e.g. a story about
                   a security audit automatically linked to your time at that company.
                 </p>
-                <div className="mt-4 md:mt-0 flex items-center gap-2">
-                  <Button size="sm" onClick={startOnboarding}>
+                <Button size="sm" onClick={startOnboarding}>
                   Add work history
                 </Button>
                 <button
@@ -427,7 +475,6 @@ export default function Home() {
                 >
                   <X size={14} />
                 </button>
-                </div>
               </div>
             )}
             <ExperienceBank
@@ -457,6 +504,7 @@ export default function Home() {
               onCreateStar={startCreateStar}
               onEditStar={startEditStar}
               onDeleteStar={deleteStarStory}
+              onUpdateCompany={updateCompany}
             />
           </div>
         )}

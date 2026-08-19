@@ -61,7 +61,7 @@ export function AppSidebar({
         aria-label="Your profile"
         className={cn(
           "mt-auto grid h-[42px] w-[42px] place-items-center rounded-[10px] text-[var(--color-sidebar-muted)] transition-colors hover:bg-[var(--color-sidebar-hover)] hover:text-white",
-          screen === "onboarding" && "bg-[var(--color-sidebar-hover)] text-white"
+          (screen === "onboarding" || screen === "profile") && "bg-[var(--color-sidebar-hover)] text-white"
         )}
       >
         <Settings size={20} />

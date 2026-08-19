@@ -1,6 +1,7 @@
 "use client"
 
-import { ArrowRight, Pencil, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { ArrowRight, Pencil, Sparkles, Trash2 } from "lucide-react"
 import { formatDate } from "@/lib/data"
 import { getCompletenessFlags, getCompletenessScore } from "@/lib/completeness"
 import type { Experience, StructuredFields } from "@/lib/types"
@@ -33,6 +34,7 @@ export function ExperienceDetail({
   onCreateStar,
   onEditStar,
   onDeleteStar,
+  onUpdateCompany,
 }: {
   experience?: Experience
   onEdit: () => void
@@ -41,7 +43,23 @@ export function ExperienceDetail({
   onCreateStar: () => void
   onEditStar: (id: string) => void
   onDeleteStar: (id: string) => void
+  onUpdateCompany: (company: string) => void
 }) {
+  const [editingCompany, setEditingCompany] = useState(false)
+  const [companyDraft, setCompanyDraft] = useState("")
+  const [trackedId, setTrackedId] = useState(experience?.id)
+
+  // Reset the inline company editor whenever a different experience is
+  // selected, so a stale draft from the last one can't leak in. Adjusted
+  // during render (guarded by the id comparison) rather than in an effect —
+  // this is state derived from a prop change, not a sync with an external
+  // system, so it doesn't need to wait for a render + effect round-trip.
+  if (experience?.id !== trackedId) {
+    setTrackedId(experience?.id)
+    setEditingCompany(false)
+    setCompanyDraft(experience?.metadata?.company || "")
+  }
+
   if (!experience) {
     return (
       <Card className="detail-card mt-5 p-7">
@@ -52,6 +70,7 @@ export function ExperienceDetail({
 
   const structured = experience.structured || {}
   const metadata = experience.metadata || {}
+  const aiSuggested = experience.aiSuggestedFields || []
   const score = getCompletenessScore(experience)
   const flags = getCompletenessFlags(experience)
   const hasAnyStructure = score > 0
@@ -60,13 +79,27 @@ export function ExperienceDetail({
     .filter(Boolean)
     .join(" – ")
 
+  const saveCompany = () => {
+    onUpdateCompany(companyDraft.trim())
+    setEditingCompany(false)
+  }
+
   return (
     <Card className="detail-card mt-5 grid grid-cols-[1.5fr_.75fr] gap-9 p-7 max-[900px]:grid-cols-1 max-[900px]:gap-6 max-[600px]:p-[22px]">
       <div>
         <div className="flex items-center gap-2 text-[11px] text-[#737b8b]">
           EXPERIENCE DETAIL <span>•</span> {dateRange}
         </div>
-        <h2 className="my-[9px] mb-4 text-2xl tracking-[-.03em]">{experience.title}</h2>
+        <h2 className={`my-[9px] text-2xl tracking-[-.03em] ${aiSuggested.length > 0 ? "mb-1" : "mb-4"}`}>
+          {experience.title}
+        </h2>
+
+        {aiSuggested.length > 0 && (
+          <p className="m-0 mb-4 flex items-center gap-[5px] text-[11px] text-[var(--color-faint-fg)]">
+            <Sparkles size={11} />
+            Some of this was filled in automatically — use &quot;Edit capture&quot; to fix anything that&apos;s off.
+          </p>
+        )}
 
         <CompletenessBadges flags={flags} />
 
@@ -128,14 +161,64 @@ export function ExperienceDetail({
         )}
 
         <h3 className="mt-7 mb-[13px] text-xs">DETAILS</h3>
-        {metadata.company || metadata.project || metadata.team || scopeEntries.length ? (
-          <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-[10px] gap-y-1">
-            {metadata.company && (
-              <>
-                <dt className="text-[11px] font-semibold text-[var(--color-subtle-fg)]">Company</dt>
-                <dd className="m-0 text-xs text-[#454d5f]">{metadata.company}</dd>
-              </>
+
+        <div className="mb-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-[var(--color-subtle-fg)]">Company</span>
+            {!editingCompany && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCompanyDraft(metadata.company || "")
+                  setEditingCompany(true)
+                }}
+                className="border-0 bg-transparent p-0 text-[11px] font-semibold text-[var(--color-accent)]"
+              >
+                {metadata.company ? "Fix" : "Add"}
+              </button>
             )}
+          </div>
+          {editingCompany ? (
+            <div className="mt-[6px] flex items-center gap-[6px]">
+              <input
+                autoFocus
+                value={companyDraft}
+                onChange={(event) => setCompanyDraft(event.target.value)}
+                onKeyDown={(event) => event.key === "Enter" && saveCompany()}
+                placeholder="e.g. Shopify"
+                className="h-8 flex-1 rounded-[8px] border border-[var(--color-border-hairline)] px-2 text-xs outline-none focus:border-[var(--color-accent)]"
+              />
+              <button
+                type="button"
+                onClick={saveCompany}
+                className="border-0 bg-transparent p-0 text-[11px] font-semibold text-[var(--color-accent)]"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditingCompany(false)}
+                className="border-0 bg-transparent p-0 text-[11px] text-[var(--color-faint-fg)]"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : metadata.company ? (
+            <div className="mt-[3px] flex items-center gap-[6px]">
+              <span className="text-xs text-[#454d5f]">{metadata.company}</span>
+              {aiSuggested.includes("company") && (
+                <Badge variant="info" className="!px-[6px] !py-[2px] !text-[9px]">
+                  AI guess
+                </Badge>
+              )}
+            </div>
+          ) : (
+            <p className="m-0 mt-[3px] text-xs italic text-[#a3a9b8]">Not added yet.</p>
+          )}
+        </div>
+
+        {metadata.project || metadata.team || scopeEntries.length ? (
+          <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-[10px] gap-y-1">
             {metadata.project && (
               <>
                 <dt className="text-[11px] font-semibold text-[var(--color-subtle-fg)]">Project</dt>

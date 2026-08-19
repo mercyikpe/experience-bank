@@ -42,6 +42,11 @@ export type Experience = {
   collaborators?: string[]
   metadata?: Partial<Metadata>
   starStories?: StarStory[]
+  // Which fields on this experience were filled in by auto-fill rather than
+  // typed by hand — drives the "AI guessed this" affordance in the detail
+  // view. Cleared once the person edits the capture, since editing is an
+  // implicit confirmation of everything in that form.
+  aiSuggestedFields?: string[]
 }
 
 export type Draft = {
@@ -74,7 +79,7 @@ export type UserProfile = {
   // Later phases: targetRoles?: string[]; skills?: string[]; resumeText?: string
 }
 
-export type Screen = "capture" | "bank" | "detail" | "complete" | "star" | "onboarding"
+export type Screen = "capture" | "bank" | "detail" | "complete" | "star" | "onboarding" | "profile"
 
 export type CompletenessTone = "warning" | "success" | "info"
 
