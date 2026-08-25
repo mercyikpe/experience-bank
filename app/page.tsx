@@ -362,13 +362,13 @@ export default function Home() {
   return (
     <div className="flex min-h-screen">
       <AppSidebar screen={screen} setScreen={setScreen} onSettingsClick={startProfile} />
-      <main className="mx-auto w-[min(1360px,calc(100%-122px))] px-3 pt-[54px] pb-[60px] max-[900px]:w-[calc(100%-82px)] max-[900px]:pt-8 max-[600px]:w-full max-[600px]:px-3.5 max-[600px]:pt-6">
-        <header className="mx-2 mb-8 flex items-start justify-between gap-[30px] max-[600px]:block max-[600px]:mb-[22px]">
+      <main className="mx-auto w-[min(1360px,calc(100%-122px))] px-3 pt-13.5 pb-15 max-[900px]:w-[calc(100%-82px)] max-[900px]:pt-8 max-[600px]:w-full max-[600px]:px-3.5 max-[600px]:pt-6">
+        <header className="mx-2 mb-8 flex items-start justify-between gap-7.5 max-[600px]:block max-[600px]:mb-5.5">
           <div>
-            <p className="mb-[7px] text-[11px] font-bold tracking-[.11em] text-[var(--color-muted-fg)]">
+            <p className="mb-1.75 text-[11px] font-bold tracking-[.11em] text-(--color-muted-fg)">
               YOUR CAREER BANK
             </p>
-            <h1 className="m-0 max-w-[620px] font-serif text-[34px] leading-[1.13] tracking-[-.035em] max-[600px]:text-[29px]">
+            <h1 className="m-0 max-w-155 font-serif text-[34px] leading-[1.13] tracking-[-.035em] max-[600px]:text-[29px]">
               Turn your work into stories worth telling.
             </h1>
           </div>
@@ -440,7 +440,7 @@ export default function Home() {
         )}
 
         {screen === "capture" && (
-          <section className="mx-2 grid max-w-[650px] grid-cols-1" aria-label="Experience capture workspace">
+          <section className="mx-2 grid max-w-162.5 grid-cols-1" aria-label="Experience capture workspace">
             <CaptureForm
               draft={draft}
               editing={Boolean(editingId)}
@@ -457,10 +457,10 @@ export default function Home() {
         )}
 
         {screen === "bank" && (
-          <section className="mx-2 grid max-w-[960px] grid-cols-1" aria-label="Experience capture workspace">
+          <section className="mx-2 grid grid-cols-1" aria-label="Experience capture workspace">
             {!profile.workHistory.length && !nudgeDismissed && (
-              <div className="mb-4 flex items-center gap-3 rounded-[12px] border border-[var(--color-tag-border)] bg-[var(--color-tag-bg)] px-4 py-3">
-                <p className="m-0 flex-1 text-[13px] text-[var(--color-tag-fg)]">
+              <div className="mb-4 flex items-center gap-3 rounded-xl border border-(--color-tag-border) bg-(--color-tag-bg) px-4 py-3">
+                <p className="m-0 flex-1 text-[13px] text-(--color-tag-fg)">
                   Add your work history so entries can be matched to where they happened — e.g. a story about
                   a security audit automatically linked to your time at that company.
                 </p>
@@ -471,7 +471,7 @@ export default function Home() {
                   type="button"
                   onClick={dismissNudge}
                   aria-label="Dismiss"
-                  className="grid h-7 w-7 flex-none place-items-center rounded-[8px] text-[var(--color-tag-fg)] hover:bg-white/60"
+                  className="grid h-7 w-7 flex-none place-items-center rounded-lg text-(--color-tag-fg) hover:bg-white/60"
                 >
                   <X size={14} />
                 </button>
@@ -495,7 +495,7 @@ export default function Home() {
         )}
 
         {screen === "detail" && (
-          <div className="mx-2 max-w-[960px]">
+          <div className="mx-2 max-w-240">
             <ExperienceDetail
               experience={selected}
               onEdit={startEdit}

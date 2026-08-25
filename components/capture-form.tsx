@@ -92,24 +92,24 @@ export function CaptureForm({
   const voice = useVoiceCapture(handleTranscript)
 
   return (
-    <Card className="capture-card p-[26px]" aria-labelledby="capture-title">
+    <Card className="capture-card p-6.5" aria-labelledby="capture-title">
       <div className="flex items-center gap-3">
         <div className="grid h-9 w-9 place-items-center rounded-[10px] bg-[linear-gradient(145deg,#7d67ff,#503bd8)] text-white">
           <Sparkles size={17} />
         </div>
         <div>
-          <p className="mb-[7px] text-[11px] font-bold tracking-[.11em] text-[var(--color-muted-fg)]">
+          <p className="mb-1.75 text-[11px] font-bold tracking-[.11em] text-(--color-muted-fg)">
             {editing ? "EDIT EXPERIENCE" : "QUICK CAPTURE"}
           </p>
           <h2 id="capture-title" className="m-0 text-[17px] tracking-[-.02em]">
             {editing ? "Refine this experience" : "Capture an experience"}
           </h2>
         </div>
-        <span className="ml-auto rounded-[20px] bg-[var(--color-success-bg)] px-[9px] py-[5px] text-[10px] font-bold text-[var(--color-success-fg)]">
+        <span className="ml-auto rounded-[20px] bg-(--color-success-bg) px-2.25 py-1.25 text-[10px] font-bold text-(--color-success-fg)">
           {editing ? "Editing" : "Ready"}
         </span>
       </div>
-      <p className="my-5 text-[13px] leading-[1.45] text-[var(--color-muted-fg)]">
+      <p className="my-5 text-[13px] leading-[1.45] text-(--color-muted-fg)">
         {editing
           ? "Fix anything below — including whatever we guessed for you."
           : "Type it or say it. We'll fill in the title, date, tags, and company for you."}
@@ -117,7 +117,7 @@ export function CaptureForm({
 
       {editing ? (
         <form onSubmit={save}>
-          <label className="mb-[17px] block">
+          <label className="mb-4.25 block">
             <span className="mb-2 block text-xs font-bold">What happened?</span>
             <Textarea
               required
@@ -126,7 +126,7 @@ export function CaptureForm({
               placeholder="Describe a project, challenge, decision, or moment that mattered…"
             />
           </label>
-          <div className="mb-[17px] grid grid-cols-[1fr_130px] gap-3 max-[600px]:grid-cols-1">
+          <div className="mb-4.25 grid grid-cols-[1fr_130px] gap-3 max-[600px]:grid-cols-1">
             <label className="block">
               <span className="mb-2 block text-xs font-bold">Experience title</span>
               <Input
@@ -141,29 +141,29 @@ export function CaptureForm({
               <Input type="date" value={draft.date} onChange={(event) => setField("date", event.target.value)} />
             </label>
           </div>
-          <label className="mb-[17px] block">
+          <label className="mb-4.25 block">
             <span className="mb-2 block text-xs font-bold">
-              Why did it matter? <em className="font-normal text-[var(--color-faint-fg)]">Optional</em>
+              Why did it matter? <em className="font-normal text-(--color-faint-fg)">Optional</em>
             </span>
             <Textarea
-              className="min-h-[70px]"
+              className="min-h-17.5"
               value={draft.impact}
               onChange={(event) => setField("impact", event.target.value)}
               placeholder="A metric, customer impact, learning, or business result…"
             />
           </label>
-          <div className="my-[1px] mb-6">
+          <div className="my-0.25 mb-6">
             <div className="flex justify-between">
               <span className="mb-2 block text-xs font-bold">Tags</span>
               <button
                 type="button"
-                className="flex items-center gap-[3px] border-0 bg-transparent p-0 text-[11px] font-semibold text-[var(--color-accent)]"
+                className="flex items-center gap-0.75 border-0 bg-transparent p-0 text-[11px] font-semibold text-(--color-accent)"
                 onClick={suggestTags}
               >
                 Suggest tags <Sparkles size={12} />
               </button>
             </div>
-            <div className="mb-[10px] flex min-h-[25px] flex-wrap gap-[7px]">
+            <div className="mb-2.5 flex min-h-6.25 flex-wrap gap-1.75">
               {draft.tags.length ? (
                 draft.tags.map((tag) => (
                   <button type="button" key={tag} onClick={() => toggleTag(tag)}>
@@ -174,12 +174,12 @@ export function CaptureForm({
                   </button>
                 ))
               ) : (
-                <span className="text-[11px] text-[var(--color-faint-fg)]">
+                <span className="text-[11px] text-(--color-faint-fg)">
                   Add a few tags to make this easy to find later.
                 </span>
               )}
             </div>
-            <div className="flex flex-wrap gap-[7px]">
+            <div className="flex flex-wrap gap-1.75">
               {tags.map((tag) => (
                 <button type="button" onClick={() => toggleTag(tag)} key={tag}>
                   <Badge variant={draft.tags.includes(tag) ? "tag-selected" : "tag"} className="cursor-pointer">
@@ -189,7 +189,7 @@ export function CaptureForm({
               ))}
             </div>
           </div>
-          <div className="flex justify-end gap-[9px] border-t border-[var(--color-border-hairline)] pt-[18px]">
+          <div className="flex justify-end gap-2.25 border-t border-(--color-border-hairline) pt-4.5">
             <Button variant="secondary" type="button" onClick={clear}>
               Cancel
             </Button>
@@ -205,7 +205,7 @@ export function CaptureForm({
             <Textarea
               required
               autoFocus
-              className="min-h-[160px]"
+              className="min-h-40"
               value={draft.description}
               onChange={(event) => setField("description", event.target.value)}
               placeholder="Describe a project, challenge, decision, or moment that mattered… or just hit record and say it."
@@ -221,20 +221,20 @@ export function CaptureForm({
                 "flex items-center gap-2 rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50",
                 voice.listening
                   ? "border-transparent bg-[#e2453a] text-white"
-                  : "border-[var(--color-tag-border)] bg-[var(--color-tag-bg)] text-[var(--color-tag-fg)] hover:bg-[var(--color-tag-selected)] hover:text-white"
+                  : "border-(--color-tag-border) bg-(--color-tag-bg) text-(--color-tag-fg) hover:bg-(--color-tag-selected) hover:text-white"
               )}
             >
               {voice.listening ? <Square size={13} /> : <Mic size={14} />}
               {voice.listening ? "Listening… tap to stop" : "Speak instead"}
             </button>
             {!voice.supported && (
-              <span className="text-[11px] text-[var(--color-faint-fg)]">
+              <span className="text-[11px] text-(--color-faint-fg)">
                 Voice capture isn&apos;t supported in this browser — try Chrome or Edge.
               </span>
             )}
           </div>
 
-          <div className="flex justify-end gap-[9px] border-t border-[var(--color-border-hairline)] pt-[18px]">
+          <div className="flex justify-end gap-2.25 border-t border-(--color-border-hairline) pt-4.5">
             <Button variant="secondary" type="button" onClick={clear}>
               Cancel
             </Button>

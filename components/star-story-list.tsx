@@ -24,8 +24,8 @@ export function StarStoryList({
   onDelete: (id: string) => void
 }) {
   return (
-    <div className="mt-6 border-t border-[var(--color-border-hairline)] pt-[18px]">
-      <h3 className="m-0 mb-[15px] text-xs tracking-[.06em] text-[var(--color-subtle-fg)] uppercase">
+    <div className="mt-6 border-t border-(--color-border-hairline) pt-4.5">
+      <h3 className="m-0 mb-3.75 text-xs tracking-[.06em] text-(--color-subtle-fg) uppercase">
         STAR stories {stories.length ? `(${stories.length})` : ""}
       </h3>
 
@@ -34,11 +34,11 @@ export function StarStoryList({
           {stories.map((story) => (
             <details
               key={story.id}
-              className="rounded-[10px] border border-[var(--color-border-hairline)] px-4 py-3 open:pb-4"
+              className="rounded-[10px] border border-(--color-border-hairline) px-4 py-3 open:pb-4"
             >
               <summary className="flex cursor-pointer list-none items-center gap-3">
                 <Badge variant="info">{story.theme}</Badge>
-                <span className="line-clamp-1 flex-1 text-[12px] text-[var(--color-subtle-fg)]">
+                <span className="line-clamp-1 flex-1 text-[12px] text-(--color-subtle-fg)">
                   {story.situation || "No situation drafted yet"}
                 </span>
                 <span
@@ -49,7 +49,7 @@ export function StarStoryList({
                     event.stopPropagation()
                     onEdit(story.id)
                   }}
-                  className="grid h-7 w-7 place-items-center rounded-[8px] text-[var(--color-subtle-fg)] hover:bg-[#f6f3ff] hover:text-[var(--color-accent)]"
+                  className="grid h-7 w-7 place-items-center rounded-lg text-(--color-subtle-fg) hover:bg-[#f6f3ff] hover:text-(--color-accent)"
                   aria-label={`Edit ${story.theme} STAR story`}
                 >
                   <Pencil size={13} />
@@ -62,21 +62,21 @@ export function StarStoryList({
                     event.stopPropagation()
                     onDelete(story.id)
                   }}
-                  className="grid h-7 w-7 place-items-center rounded-[8px] text-[var(--color-danger-fg)] hover:bg-[#fdf3f3]"
+                  className="grid h-7 w-7 place-items-center rounded-lg text-(--color-danger-fg) hover:bg-[#fdf3f3]"
                   aria-label={`Delete ${story.theme} STAR story`}
                 >
                   <Trash2 size={13} />
                 </span>
               </summary>
-              <div className="mt-3 grid gap-3 border-t border-[var(--color-border-hairline)] pt-3">
+              <div className="mt-3 grid gap-3 border-t border-(--color-border-hairline) pt-3">
                 {STAR_LABELS.map(([key, letter, label]) => (
                   <div key={key} className="flex gap-3">
-                    <span className="grid h-5 w-5 flex-none place-items-center rounded-[6px] bg-[linear-gradient(145deg,#7d67ff,#503bd8)] text-[10px] font-bold text-white">
+                    <span className="grid h-5 w-5 flex-none place-items-center rounded-md bg-[linear-gradient(145deg,#7d67ff,#503bd8)] text-[10px] font-bold text-white">
                       {letter}
                     </span>
                     <div>
-                      <p className="m-0 mb-1 text-[11px] font-bold text-[var(--color-muted-fg)]">{label}</p>
-                      <p className="m-0 whitespace-pre-line text-[13px] leading-[1.55] text-[var(--color-body-fg)]">
+                      <p className="m-0 mb-1 text-[11px] font-bold text-(--color-muted-fg)">{label}</p>
+                      <p className="m-0 whitespace-pre-line text-[13px] leading-[1.55] text-(--color-body-fg)">
                         {story[key] || <span className="italic text-[#a3a9b8]">Not filled in yet.</span>}
                       </p>
                     </div>

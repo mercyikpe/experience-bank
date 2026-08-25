@@ -30,34 +30,34 @@ export function CompleteExperienceForm({
     setDraft((current) => ({ ...current, [key]: value }))
 
   return (
-    <Card className="structure-card mx-2 mb-8 max-w-[760px] p-7">
+    <Card className="structure-card mx-2 mb-8 max-w-190 p-7">
       <div className="flex items-center gap-3">
         <div className="grid h-9 w-9 place-items-center rounded-[10px] bg-[linear-gradient(145deg,#7d67ff,#503bd8)] text-white">
           <Sparkles size={17} />
         </div>
         <div>
-          <p className="mb-[7px] text-[11px] font-bold tracking-[.11em] text-[var(--color-muted-fg)]">
+          <p className="mb-1.75 text-[11px] font-bold tracking-[.11em] text-(--color-muted-fg)">
             COMPLETE THIS EXPERIENCE
           </p>
           <h2 className="m-0 text-[17px] tracking-[-.02em]">Build the evidence behind your story</h2>
         </div>
-        <span className="ml-auto rounded-[20px] bg-[var(--color-success-bg)] px-[9px] py-[5px] text-[10px] font-bold text-[var(--color-success-fg)]">
+        <span className="ml-auto rounded-[20px] bg-(--color-success-bg) px-2.25 py-1.25 text-[10px] font-bold text-(--color-success-fg)">
           Draft
         </span>
       </div>
-      <p className="my-5 text-[13px] leading-[1.45] text-[var(--color-muted-fg)]">
+      <p className="my-5 text-[13px] leading-[1.45] text-(--color-muted-fg)">
         Your original capture stays exactly as you wrote it — these answers make it easier to find, trust, and
         turn into interview material later.
       </p>
       <form onSubmit={onSave}>
-        <h3 className="mt-0 mb-[14px] border-t-0 pt-0 text-xs tracking-[.06em] text-[var(--color-subtle-fg)] uppercase">
+        <h3 className="mt-0 mb-3.5 border-t-0 pt-0 text-xs tracking-[.06em] text-(--color-subtle-fg) uppercase">
           Tell the story
         </h3>
         {STORY_FIELDS.map(([key, label, hint]) => (
-          <label key={key} className="mb-[17px] block">
+          <label key={key} className="mb-4.25 block">
             <span className="mb-2 block text-xs font-bold">{label}</span>
             <Textarea
-              className="min-h-[85px]"
+              className="min-h-21.25"
               value={draft[key]}
               onChange={(event) => setField(key, event.target.value)}
               placeholder={hint}
@@ -65,9 +65,9 @@ export function CompleteExperienceForm({
           </label>
         ))}
 
-        <label className="mb-[17px] block">
+        <label className="mb-4.25 block">
           <span className="mb-2 block text-xs font-bold">
-            Who did you work with? <em className="font-normal text-[var(--color-faint-fg)]">Optional</em>
+            Who did you work with? <em className="font-normal text-(--color-faint-fg)">Optional</em>
           </span>
           <Input
             value={draft.collaborators}
@@ -76,33 +76,33 @@ export function CompleteExperienceForm({
           />
         </label>
 
-        <h3 className="mt-[26px] mb-[14px] border-t border-[var(--color-border-hairline)] pt-[18px] text-xs tracking-[.06em] text-[var(--color-subtle-fg)] uppercase">
+        <h3 className="mt-6.5 mb-3.5 border-t border-(--color-border-hairline) pt-4.5 text-xs tracking-[.06em] text-(--color-subtle-fg) uppercase">
           Add the details
         </h3>
-        <div className="mb-[17px] grid grid-cols-2 gap-3 max-[600px]:grid-cols-1">
+        <div className="mb-4.25 grid grid-cols-2 gap-3 max-[600px]:grid-cols-1">
           <label className="block">
             <span className="mb-2 block text-xs font-bold">
-              Company <em className="font-normal text-[var(--color-faint-fg)]">Optional</em>
+              Company <em className="font-normal text-(--color-faint-fg)">Optional</em>
             </span>
             <Input value={draft.company} onChange={(event) => setField("company", event.target.value)} placeholder="e.g. Acme Corp" />
           </label>
           <label className="block">
             <span className="mb-2 block text-xs font-bold">
-              Project <em className="font-normal text-[var(--color-faint-fg)]">Optional</em>
+              Project <em className="font-normal text-(--color-faint-fg)">Optional</em>
             </span>
             <Input value={draft.project} onChange={(event) => setField("project", event.target.value)} placeholder="e.g. Audience Engine" />
           </label>
         </div>
-        <div className="mb-[17px] grid grid-cols-2 gap-3 max-[600px]:grid-cols-1">
+        <div className="mb-4.25 grid grid-cols-2 gap-3 max-[600px]:grid-cols-1">
           <label className="block">
             <span className="mb-2 block text-xs font-bold">
-              Team <em className="font-normal text-[var(--color-faint-fg)]">Optional</em>
+              Team <em className="font-normal text-(--color-faint-fg)">Optional</em>
             </span>
             <Input value={draft.team} onChange={(event) => setField("team", event.target.value)} placeholder="e.g. Backend, Data Platform" />
           </label>
           <label className="block">
             <span className="mb-2 block text-xs font-bold">
-              End date <em className="font-normal text-[var(--color-faint-fg)]">Optional — if this ran over time</em>
+              End date <em className="font-normal text-(--color-faint-fg)">Optional — if this ran over time</em>
             </span>
             <Input type="date" value={draft.dateEnd} onChange={(event) => setField("dateEnd", event.target.value)} />
           </label>
@@ -110,10 +110,10 @@ export function CompleteExperienceForm({
 
         <div className="flex justify-between">
           <span className="mb-2 block text-xs font-bold">
-            Scope <em className="font-normal text-[var(--color-faint-fg)]">Optional</em>
+            Scope <em className="font-normal text-(--color-faint-fg)">Optional</em>
           </span>
         </div>
-        <div className="mb-[17px] grid grid-cols-2 gap-3 max-[600px]:grid-cols-1">
+        <div className="mb-4.25 grid grid-cols-2 gap-3 max-[600px]:grid-cols-1">
           <label className="block">
             <span className="mb-2 block text-xs font-bold">Users affected</span>
             <Input value={draft.scopeUsers} onChange={(event) => setField("scopeUsers", event.target.value)} placeholder="e.g. 500K monthly users" />
@@ -123,7 +123,7 @@ export function CompleteExperienceForm({
             <Input value={draft.scopeRevenue} onChange={(event) => setField("scopeRevenue", event.target.value)} placeholder="e.g. $12K/month saved" />
           </label>
         </div>
-        <div className="mb-[17px] grid grid-cols-2 gap-3 max-[600px]:grid-cols-1">
+        <div className="mb-4.25 grid grid-cols-2 gap-3 max-[600px]:grid-cols-1">
           <label className="block">
             <span className="mb-2 block text-xs font-bold">Systems involved</span>
             <Input value={draft.scopeSystems} onChange={(event) => setField("scopeSystems", event.target.value)} placeholder="e.g. Audience Engine, Postgres" />
@@ -134,7 +134,7 @@ export function CompleteExperienceForm({
           </label>
         </div>
 
-        <div className="flex justify-end gap-[9px] border-t border-[var(--color-border-hairline)] pt-[18px]">
+        <div className="flex justify-end gap-2.25 border-t border-(--color-border-hairline) pt-4.5">
           <Button variant="secondary" type="button" onClick={onCancel}>
             Cancel
           </Button>

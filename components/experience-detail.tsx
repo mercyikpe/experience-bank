@@ -63,7 +63,7 @@ export function ExperienceDetail({
   if (!experience) {
     return (
       <Card className="detail-card mt-5 p-7">
-        <div className="py-[22px] text-center text-[#8991a1]">Select an experience to see its details.</div>
+        <div className="py-5.5 text-center text-[#8991a1]">Select an experience to see its details.</div>
       </Card>
     )
   }
@@ -85,17 +85,17 @@ export function ExperienceDetail({
   }
 
   return (
-    <Card className="detail-card mt-5 grid grid-cols-[1.5fr_.75fr] gap-9 p-7 max-[900px]:grid-cols-1 max-[900px]:gap-6 max-[600px]:p-[22px]">
+    <Card className="detail-card mt-5 grid grid-cols-[1.5fr_.75fr] gap-9 p-7 max-[900px]:grid-cols-1 max-[900px]:gap-6 max-[600px]:p-5.5">
       <div>
         <div className="flex items-center gap-2 text-[11px] text-[#737b8b]">
           EXPERIENCE DETAIL <span>•</span> {dateRange}
         </div>
-        <h2 className={`my-[9px] text-2xl tracking-[-.03em] ${aiSuggested.length > 0 ? "mb-1" : "mb-4"}`}>
+        <h2 className={`my-2.25 text-2xl tracking-[-.03em] ${aiSuggested.length > 0 ? "mb-1" : "mb-4"}`}>
           {experience.title}
         </h2>
 
         {aiSuggested.length > 0 && (
-          <p className="m-0 mb-4 flex items-center gap-[5px] text-[11px] text-[var(--color-faint-fg)]">
+          <p className="m-0 mb-4 flex items-center gap-1.25 text-[11px] text-(--color-faint-fg)">
             <Sparkles size={11} />
             Some of this was filled in automatically — use &quot;Edit capture&quot; to fix anything that&apos;s off.
           </p>
@@ -103,12 +103,12 @@ export function ExperienceDetail({
 
         <CompletenessBadges flags={flags} />
 
-        <div className="grid gap-[19px]">
+        <div className="grid gap-4.75">
           {STRUCTURE_SECTIONS.map(([key, label, hint]) => (
-            <div className="border-b border-[var(--color-border-hairline)] pb-[17px]" key={key}>
-              <h3 className="mb-[7px] text-xs">{label}</h3>
+            <div className="border-b border-(--color-border-hairline) pb-4.25" key={key}>
+              <h3 className="mb-1.75 text-xs">{label}</h3>
               {structured[key]?.trim() ? (
-                <p className="m-0 whitespace-pre-line text-[13px] leading-[1.55] text-[var(--color-body-fg)]">
+                <p className="m-0 whitespace-pre-line text-[13px] leading-[1.55] text-(--color-body-fg)">
                   {structured[key]}
                 </p>
               ) : (
@@ -125,23 +125,23 @@ export function ExperienceDetail({
           onDelete={onDeleteStar}
         />
 
-        <details className="mt-6 border-t border-[var(--color-border-hairline)] pt-[18px]">
-          <summary className="cursor-pointer text-xs font-bold text-[var(--color-muted-fg)]">
+        <details className="mt-6 border-t border-(--color-border-hairline) pt-4.5">
+          <summary className="cursor-pointer text-xs font-bold text-(--color-muted-fg)">
             Original capture (preserved as written)
           </summary>
           <p className="mt-3 whitespace-pre-line text-sm leading-[1.65] text-[#454d5f]">{experience.description}</p>
           {experience.impact && (
-            <div className="mt-[22px] border-l-[3px] border-[#8a74f3] py-1.5 pl-[14px]">
+            <div className="mt-5.5 border-l-[3px] border-[#8a74f3] py-1.5 pl-3.5">
               <p className="m-0 mb-1 text-[11px] font-bold text-[#6349d9]">WHY IT MATTERED</p>
-              <span className="text-[13px] leading-[1.5] text-[#555c6d]">{experience.impact}</span>
+              <span className="text-[13px] leading-normal text-[#555c6d]">{experience.impact}</span>
             </div>
           )}
         </details>
       </div>
 
-      <aside className="border-l border-[var(--color-border-panel)] pl-7 max-[900px]:border-l-0 max-[900px]:border-t max-[900px]:pl-0 max-[900px]:pt-5">
-        <h3 className="mb-[13px] text-xs">SKILLS & THEMES</h3>
-        <div className="flex flex-wrap gap-[7px]">
+      <aside className="border-l border-(--color-border-panel) pl-7 max-[900px]:border-l-0 max-[900px]:border-t max-[900px]:pl-0 max-[900px]:pt-5">
+        <h3 className="mb-3.25 text-xs">SKILLS & THEMES</h3>
+        <div className="flex flex-wrap gap-1.75">
           {experience.tags.length ? (
             experience.tags.map((tag) => <Badge key={tag}>{tag}</Badge>)
           ) : (
@@ -149,9 +149,9 @@ export function ExperienceDetail({
           )}
         </div>
 
-        <h3 className="mt-7 mb-[13px] text-xs">WHO WORKED ON THIS</h3>
+        <h3 className="mt-7 mb-3.25 text-xs">WHO WORKED ON THIS</h3>
         {experience.collaborators?.length ? (
-          <div className="flex flex-wrap gap-[7px]">
+          <div className="flex flex-wrap gap-1.75">
             {experience.collaborators.map((person) => (
               <Badge key={person}>{person}</Badge>
             ))}
@@ -160,11 +160,11 @@ export function ExperienceDetail({
           <p className="m-0 text-xs italic text-[#a3a9b8]">Not added yet.</p>
         )}
 
-        <h3 className="mt-7 mb-[13px] text-xs">DETAILS</h3>
+        <h3 className="mt-7 mb-3.25 text-xs">DETAILS</h3>
 
         <div className="mb-3">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-[var(--color-subtle-fg)]">Company</span>
+            <span className="text-[11px] font-semibold text-(--color-subtle-fg)">Company</span>
             {!editingCompany && (
               <button
                 type="button"
@@ -172,68 +172,68 @@ export function ExperienceDetail({
                   setCompanyDraft(metadata.company || "")
                   setEditingCompany(true)
                 }}
-                className="border-0 bg-transparent p-0 text-[11px] font-semibold text-[var(--color-accent)]"
+                className="border-0 bg-transparent p-0 text-[11px] font-semibold text-(--color-accent)"
               >
                 {metadata.company ? "Fix" : "Add"}
               </button>
             )}
           </div>
           {editingCompany ? (
-            <div className="mt-[6px] flex items-center gap-[6px]">
+            <div className="mt-1.5 flex items-center gap-1.5">
               <input
                 autoFocus
                 value={companyDraft}
                 onChange={(event) => setCompanyDraft(event.target.value)}
                 onKeyDown={(event) => event.key === "Enter" && saveCompany()}
                 placeholder="e.g. Shopify"
-                className="h-8 flex-1 rounded-[8px] border border-[var(--color-border-hairline)] px-2 text-xs outline-none focus:border-[var(--color-accent)]"
+                className="h-8 flex-1 rounded-lg border border-(--color-border-hairline) px-2 text-xs outline-none focus:border-(--color-accent)"
               />
               <button
                 type="button"
                 onClick={saveCompany}
-                className="border-0 bg-transparent p-0 text-[11px] font-semibold text-[var(--color-accent)]"
+                className="border-0 bg-transparent p-0 text-[11px] font-semibold text-(--color-accent)"
               >
                 Save
               </button>
               <button
                 type="button"
                 onClick={() => setEditingCompany(false)}
-                className="border-0 bg-transparent p-0 text-[11px] text-[var(--color-faint-fg)]"
+                className="border-0 bg-transparent p-0 text-[11px] text-(--color-faint-fg)"
               >
                 Cancel
               </button>
             </div>
           ) : metadata.company ? (
-            <div className="mt-[3px] flex items-center gap-[6px]">
+            <div className="mt-0.75 flex items-center gap-1.5">
               <span className="text-xs text-[#454d5f]">{metadata.company}</span>
               {aiSuggested.includes("company") && (
-                <Badge variant="info" className="!px-[6px] !py-[2px] !text-[9px]">
+                <Badge variant="info" className="!px-1.5 !py-0.5 !text-[9px]">
                   AI guess
                 </Badge>
               )}
             </div>
           ) : (
-            <p className="m-0 mt-[3px] text-xs italic text-[#a3a9b8]">Not added yet.</p>
+            <p className="m-0 mt-0.75 text-xs italic text-[#a3a9b8]">Not added yet.</p>
           )}
         </div>
 
         {metadata.project || metadata.team || scopeEntries.length ? (
-          <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-[10px] gap-y-1">
+          <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1">
             {metadata.project && (
               <>
-                <dt className="text-[11px] font-semibold text-[var(--color-subtle-fg)]">Project</dt>
+                <dt className="text-[11px] font-semibold text-(--color-subtle-fg)">Project</dt>
                 <dd className="m-0 text-xs text-[#454d5f]">{metadata.project}</dd>
               </>
             )}
             {metadata.team && (
               <>
-                <dt className="text-[11px] font-semibold text-[var(--color-subtle-fg)]">Team</dt>
+                <dt className="text-[11px] font-semibold text-(--color-subtle-fg)">Team</dt>
                 <dd className="m-0 text-xs text-[#454d5f]">{metadata.team}</dd>
               </>
             )}
             {scopeEntries.map(([key, label]) => (
               <span className="contents" key={key}>
-                <dt className="text-[11px] font-semibold text-[var(--color-subtle-fg)]">{label}</dt>
+                <dt className="text-[11px] font-semibold text-(--color-subtle-fg)">{label}</dt>
                 <dd className="m-0 text-xs text-[#454d5f]">{metadata[key as keyof typeof metadata]}</dd>
               </span>
             ))}
@@ -242,13 +242,13 @@ export function ExperienceDetail({
           <p className="m-0 text-xs italic text-[#a3a9b8]">Not added yet.</p>
         )}
 
-        <h3 className="mt-7 mb-[13px] text-xs">STRUCTURE</h3>
-        <p className="mb-[18px] text-xs leading-[1.5] text-[var(--color-subtle-fg)]">
+        <h3 className="mt-7 mb-3.25 text-xs">STRUCTURE</h3>
+        <p className="mb-4.5 text-xs leading-normal text-(--color-subtle-fg)">
           {hasAnyStructure
             ? `${score}% complete — keep filling this in for stronger STAR stories later.`
             : "Add context, ownership, actions, and outcome to strengthen this story."}
         </p>
-        <Button className="mb-[18px] w-full" onClick={onComplete}>
+        <Button className="mb-4.5 w-full" onClick={onComplete}>
           {hasAnyStructure ? "Edit details" : "Complete this experience"} <ArrowRight size={14} />
         </Button>
 

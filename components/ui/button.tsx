@@ -20,8 +20,8 @@ const buttonVariants = cva(
         link: "text-[#6149e5] hover:underline p-0 h-auto font-semibold",
       },
       size: {
-        default: "h-auto px-[18px] py-3",
-        sm: "h-auto px-[15px] py-2.5",
+        default: "h-auto px-4.5 py-3",
+        sm: "h-auto px-3.75 py-2.5",
         icon: "h-9 w-9 rounded-[10px]",
       },
     },

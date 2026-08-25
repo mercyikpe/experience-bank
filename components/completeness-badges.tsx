@@ -11,7 +11,7 @@ const ICONS: Record<CompletenessTone, typeof Info> = {
 export function CompletenessBadges({ flags }: { flags: CompletenessFlag[] }) {
   if (!flags.length) return null
   return (
-    <div className="my-[14px] mb-[22px] flex flex-wrap gap-[7px]">
+    <div className="my-3.5 mb-5.5 flex flex-wrap gap-1.75">
       {flags.map((flag) => {
         const Icon = ICONS[flag.tone] || Info
         return (
