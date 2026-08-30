@@ -1,19 +1,25 @@
 "use client"
 
-import { Archive, FileText, Home, Settings, Sparkles } from "lucide-react"
-import type { Screen } from "@/lib/types"
-import { cn } from "@/lib/utils"
+import Image from "next/image"
+import { Archive, Home, Sparkles } from "lucide-react"
+import type { Screen, UserProfile } from "@/lib/types"
+import { cn, initials } from "@/lib/utils"
 
 export function AppSidebar({
   screen,
   setScreen,
   onSettingsClick,
+  profile,
+  avatarUrl,
 }: {
   screen: Screen
   setScreen: (screen: Screen) => void
   onSettingsClick: () => void
+  profile: UserProfile
+  avatarUrl: string | null
 }) {
   const bankActive = screen === "bank" || screen === "detail" || screen === "complete" || screen === "star"
+  const profileActive = screen === "onboarding" || screen === "profile"
 
   return (
     <aside className="mt-5 mr-5 mb-5 ml-0 flex w-20.5 flex-none flex-col items-center rounded-[18px] bg-(--color-sidebar) px-3 py-3.5 text-(--color-sidebar-fg) shadow-[0_14px_28px_#28314d25] max-[900px]:mt-2.5 max-[900px]:mr-2.5 max-[900px]:mb-2.5 max-[900px]:ml-0 max-[900px]:w-15.5 max-[600px]:hidden">
@@ -47,28 +53,24 @@ export function AppSidebar({
         >
           <Archive size={20} />
         </button>
-        <button
-          type="button"
-          aria-label="Opportunities"
-          className="grid h-10.5 w-10.5 place-items-center rounded-[10px] text-(--color-sidebar-muted) transition-colors hover:bg-(--color-sidebar-hover) hover:text-white"
-        >
-          <FileText size={20} />
-        </button>
       </nav>
       <button
         type="button"
         onClick={onSettingsClick}
         aria-label="Your profile"
         className={cn(
-          "mt-auto grid h-10.5 w-10.5 place-items-center rounded-[10px] text-(--color-sidebar-muted) transition-colors hover:bg-(--color-sidebar-hover) hover:text-white",
-          (screen === "onboarding" || screen === "profile") && "bg-(--color-sidebar-hover) text-white"
+          "mt-auto grid h-8.25 w-8.25 flex-none place-items-center rounded-full border-2 text-[11px] font-semibold transition-colors",
+          profileActive
+            ? "border-(--color-brand-from) bg-[linear-gradient(145deg,var(--color-brand-from),var(--color-brand-to))] text-white"
+            : "border-(--color-sidebar-hover) bg-(--color-sidebar-hover) text-(--color-sidebar-fg) hover:border-(--color-brand-from)"
         )}
       >
-        <Settings size={20} />
+        {avatarUrl ? (
+          <Image src={avatarUrl} alt="" width={33} height={33} className="h-full w-full rounded-full object-cover" />
+        ) : (
+          initials(profile.name)
+        )}
       </button>
-      <div className="mt-3.75 grid h-8.25 w-8.25 place-items-center rounded-full border-2 border-[#f8ddc8] bg-[#f3b98b] text-[11px] text-[#402e27]">
-        MJ
-      </div>
     </aside>
   )
 }

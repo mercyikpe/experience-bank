@@ -28,7 +28,7 @@ Steps 3–5 are a later phase (opportunity fit analysis and prep-package generat
 
 **Phase 3 — STAR Story Generation.** Pick a structured experience and an interview theme (reuses the existing tag vocabulary — Leadership, Ownership, Performance, etc.), and get an editable Situation/Task/Action/Result draft, deterministically assembled from the structured fields with theme-appropriate framing. Fully editable before saving; an experience can hold multiple STAR variants for different themes.
 
-Everything shipped so far is deterministic — no AI/LLM calls, no backend. That changes with this phase.
+Everything through Phase 3 was deterministic and client-only — no AI/LLM calls, no backend. Phase 4 (below) keeps the "no LLM calls" decision (see §10), but the app has since gained a real backend: Postgres (via Drizzle ORM) and Google sign-in via Supabase Auth replace the original localStorage-only persistence. Every user's profile, work history, experiences, and STAR stories are now stored server-side and scoped to their account — Server Actions re-derive the signed-in user from the session on every call, with Postgres Row Level Security as a second layer of protection.
 
 ## 5. Phase 4 — remove capture friction, let AI fill in the rest
 
@@ -60,8 +60,8 @@ On top of the raw capture, without ever touching or overwriting it:
 - **Date** — defaults to capture time, but should pick up an explicit date/timeframe mentioned in the text ("back in March," "last quarter").
 - **Tags** — real inference against the existing tag vocabulary, replacing today's keyword-matching `suggestTags`.
 - **Company / project** — see 5.4.
-- **Impact/metrics** — pull out numbers if they're mentioned.
-- Optionally, a first-pass guess at the structured fields (Situation/Outcome), pre-filling the existing "Complete this experience" flow instead of leaving it blank.
+- **Impact/metrics** — pull out numbers if they're mentioned. *(Not yet implemented — `lib/autofill.ts` currently returns only title, date, tags, and company; a new capture's impact field stays empty until filled in by hand.)*
+- Optionally, a first-pass guess at the structured fields (Situation/Outcome), pre-filling the existing "Complete this experience" flow instead of leaving it blank. *(Partially in place — starting that flow already seeds Situation from the raw capture and Outcome from the impact field when they haven't been filled in yet; this happens when that step is opened, not at capture-save time.)*
 
 All of it stays editable and removable, same as today's tag suggestions.
 
@@ -69,7 +69,7 @@ All of it stays editable and removable, same as today's tag suggestions.
 
 If someone says, by voice, that they resolved a security audit issue while at Shopify, the entry should land already attached to their Shopify work experience — not sitting unassigned waiting for them to fill in "Company" by hand later. For that to work, two things have to exist:
 
-1. **Work history from onboarding** (5.5) — company, role, and date range for each job the user has held.
+1. **Work history from onboarding** (5.5) — company, role, and date range for each job the user has held. *(Shipped, and the profile view goes further than this spec: it now groups every experience under its matched work-history role, with a count of how many entries still aren't linked to any company.)*
 2. **A matching step on save** — Career Bank checks the capture for company signals. Explicit mentions ("at Shopify," "on the Shopify team") are the strong signal; where there's no explicit mention, the capture's date can be matched against work-history date ranges as a weaker, suggested match. A confident match populates `metadata.company` / `metadata.project` / `metadata.team` (already part of the Phase 2 data model) instead of leaving them blank. An unclear match is left unassigned, exactly like today — this only removes work the user would otherwise have to do by hand, it doesn't guess wildly.
 
 ### 5.5 Onboarding
@@ -123,6 +123,6 @@ Onboarding shouldn't gate capture — someone should be able to capture an exper
 
 ## 11. Open questions
 
-- **Correcting a bad AI match.** "Not added yet" isn't the right empty state anymore once AI is guessing — a wrong guess needs its own affordance ("We think this was at Shopify — right?"), not just a blank field to fill in.
-- **Overlapping work history.** Someone contracting at two companies at once, or between roles, breaks simple date-range matching. Worth deciding how ambiguous matches surface (pick one, ask, or leave unassigned) before relying on dates alone.
+- **Correcting a bad AI match.** "Not added yet" isn't the right empty state anymore once AI is guessing — a wrong guess needs its own affordance ("We think this was at Shopify — right?"), not just a blank field to fill in. *(Partially shipped: the experience detail view shows an "AI guess" badge next to an auto-matched company with an inline "Fix" editor — not the confirm/deny prompt described above, but a working first pass at the same problem.)*
+- **Overlapping work history.** Someone contracting at two companies at once, or between roles, breaks simple date-range matching. Worth deciding how ambiguous matches surface (pick one, ask, or leave unassigned) before relying on dates alone. *(The matching logic already resolves this conservatively — `matchCompany()` leaves the capture unassigned whenever a date falls inside more than one role's range rather than guessing — but there's still no UI moment that surfaces the ambiguity to the user, so the "ask" option here remains unbuilt.)*
 - **Resume/CV import — work history is straightforward, entries are trickier.** Extracting `{company, title, dates}` from a resume is a good fit for the deterministic approach already in use elsewhere — resumes have fairly consistent structure (company/title lines, date ranges), similar in shape to the work-history form itself. Turning resume bullets into Experience entries is a different problem: bullets are already condensed and pre-polished (action verb + metric), which reads like a finished Outcome but is usually thin on Situation/Challenge — the texture that makes a story reusable in an interview later. If we build this, resume-derived entries should probably be visually marked ("From resume — worth fleshing out") and nudged toward "Complete this experience" rather than treated as equivalent to a fresh capture. Parsing free-form bullets out of arbitrary resume layouts is also a harder problem than anything shipped so far — title/date/tag inference all operate on a single, known-shape string (one capture's text), whereas a resume is multi-section and inconsistently formatted across templates. This may end up being the first place where the "deterministic heuristics, not LLM calls" decision in §10 is worth revisiting, even if work-history extraction alone can probably stay rule-based.

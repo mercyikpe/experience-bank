@@ -2,17 +2,13 @@
 
 import { ArrowRight, Briefcase, Pencil, Sparkles } from "lucide-react"
 import { formatDate } from "@/lib/data"
+import { initials } from "@/lib/utils"
 import type { Experience, UserProfile, WorkHistoryEntry } from "@/lib/types"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { signOut } from "@/lib/actions/auth"
 
 const normalize = (value: string) => value.trim().toLowerCase()
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  if (!parts.length) return "?"
-  return (parts[0][0] + (parts[1]?.[0] || "")).toUpperCase()
-}
 
 function roleDateRange(row: WorkHistoryEntry) {
   const start = row.startDate ? formatDate(row.startDate) : "No start date"
@@ -94,6 +90,11 @@ export function ProfileView({
         <Button onClick={onEdit} className="mx-auto">
           Add your work info <ArrowRight size={15} />
         </Button>
+        <form action={signOut} className="mt-4">
+          <button type="submit" className="text-[12px] font-semibold text-(--color-faint-fg) hover:text-(--color-subtle-fg)">
+            Sign out
+          </button>
+        </form>
       </Card>
     )
   }
@@ -116,16 +117,23 @@ export function ProfileView({
               </p>
             </div>
           </div>
-          <Button variant="secondary" size="sm" onClick={onEdit}>
-            <Pencil size={14} />
-            Edit profile
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" onClick={onEdit}>
+              <Pencil size={14} />
+              Edit profile
+            </Button>
+            <form action={signOut}>
+              <Button type="submit" variant="ghost" size="sm">
+                Sign out
+              </Button>
+            </form>
+          </div>
         </div>
       </Card>
 
       <Card className="structure-card p-7">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="m-0 text-xs tracking-[.06em] text-(--color-subtle-fg) uppercase">Work history</h3>
+        <div className="mb-4 md:flex items-center justify-between">
+          <h3 className="m-0 text-sm tracking-[.06em] font-bold uppercase">Work history</h3>
           {unlinkedCount > 0 && (
             <span className="flex items-center gap-1.25 text-[11px] text-(--color-faint-fg)">
               <Sparkles size={11} />
@@ -149,7 +157,7 @@ export function ProfileView({
           </div>
         ) : (
           <div className="rounded-[10px] border border-dashed border-(--color-border-soft) px-4 py-6 text-center text-[13px] text-(--color-subtle-fg)">
-            No work history yet — add a role so entries you capture can be matched to where they happened.
+            No work history yet - add a role so entries you capture can be matched to where they happened.
           </div>
         )}
       </Card>

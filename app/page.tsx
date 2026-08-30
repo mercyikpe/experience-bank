@@ -6,8 +6,10 @@ import { toast } from "sonner"
 import { blankDraft, blankProfile, blankStarDraft, blankWorkHistoryRow, emptyCompletion, starterExperiences, tags as tagVocabulary } from "@/lib/data"
 import { generateStarDraft } from "@/lib/star"
 import { autoFillExperience, inferTags } from "@/lib/autofill"
+import { getInitialData, syncExperiences, syncProfile } from "@/lib/actions/data"
 import type { CompletionDraft, Draft, Experience, Screen, StarDraft, UserProfile, WorkHistoryEntry } from "@/lib/types"
 import { AppSidebar } from "@/components/sidebar"
+import { MobileNav } from "@/components/mobile-nav"
 import { CaptureForm } from "@/components/capture-form"
 import { ExperienceBank } from "@/components/experience-bank"
 import { ExperienceDetail } from "@/components/experience-detail"
@@ -20,7 +22,6 @@ import { X } from "lucide-react"
 
 const STORAGE_KEY = "experience-bank-items"
 const PROFILE_STORAGE_KEY = "career-bank-profile"
-const NUDGE_STORAGE_KEY = "career-bank-nudge-dismissed"
 
 export default function Home() {
   const [experiences, setExperiences] = useState<Experience[]>(starterExperiences)
@@ -34,33 +35,74 @@ export default function Home() {
   const [starDraft, setStarDraft] = useState<StarDraft>(blankStarDraft)
   const [editingStarId, setEditingStarId] = useState<string | null>(null)
   const [profile, setProfile] = useState<UserProfile>(blankProfile)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [profileDraft, setProfileDraft] = useState<UserProfile>(blankProfile)
   const [nudgeDismissed, setNudgeDismissed] = useState(false)
   const [screen, setScreen] = useState<Screen>("capture")
 
-  // Load persisted experiences on mount (client-only — avoids SSR/localStorage mismatch).
-  // Reading localStorage has to happen post-mount, so this necessarily sets
-  // state from an effect rather than during render.
+  // Load this account's data from the server on mount (client-only — the
+  // fetch needs the signed-in session, and effects are how we bring async
+  // data into state after render). A brand-new account (nothing saved
+  // server-side yet) adopts whatever's still sitting in this browser's
+  // localStorage from using the app before signing in — a one-time
+  // migration — otherwise it falls back to the starter demo content so it
+  // isn't empty on day one. A returning account's server data always wins;
+  // localStorage is never consulted again after this.
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY)
-    const parsed = stored ? (JSON.parse(stored) as Experience[]) : null
-    const initial = parsed || starterExperiences
-    const storedProfile = window.localStorage.getItem(PROFILE_STORAGE_KEY)
-    const initialProfile = storedProfile ? (JSON.parse(storedProfile) as UserProfile) : blankProfile
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time localStorage hydration, unavoidable on mount
-    setExperiences(initial)
-    setSelectedId(initial[0]?.id)
-    setProfile(initialProfile)
-    setNudgeDismissed(window.localStorage.getItem(NUDGE_STORAGE_KEY) === "true")
-    setHydrated(true)
+    let cancelled = false
+      ; (async () => {
+        try {
+          const { experiences: serverExperiences, profile: serverProfile, isNewAccount, avatarUrl: accountAvatarUrl } = await getInitialData()
+          let initialExperiences = serverExperiences
+          let initialProfile = serverProfile
+
+          if (isNewAccount) {
+            const storedExperiences = window.localStorage.getItem(STORAGE_KEY)
+            const storedProfile = window.localStorage.getItem(PROFILE_STORAGE_KEY)
+            const localExperiences = storedExperiences ? (JSON.parse(storedExperiences) as Experience[]) : null
+            const localProfile = storedProfile ? (JSON.parse(storedProfile) as UserProfile) : null
+
+            if (localExperiences || localProfile) {
+              initialExperiences = localExperiences || starterExperiences
+              initialProfile = localProfile || blankProfile
+              await Promise.all([syncExperiences(initialExperiences), syncProfile(initialProfile)])
+              window.localStorage.removeItem(STORAGE_KEY)
+              window.localStorage.removeItem(PROFILE_STORAGE_KEY)
+            } else {
+              initialExperiences = starterExperiences
+            }
+          }
+
+          if (cancelled) return
+          setExperiences(initialExperiences)
+          setSelectedId(initialExperiences[0]?.id)
+          setProfile(initialProfile)
+          setAvatarUrl(accountAvatarUrl)
+          // Deliberately not persisted (session-only): work history is central to
+          // how experiences get grouped by company, so a reload should surface
+          // this nudge again until a role is actually added — dismissing it only
+          // clears the current view, not the underlying "still missing" state.
+          setHydrated(true)
+        } catch (error) {
+          console.error("Failed to load Career Bank data", error)
+          if (!cancelled) toast("Couldn't load your Career Bank — try refreshing the page.")
+        }
+      })()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
+  // Whole-array sync on every change, same shape as the localStorage effect
+  // this replaced: these only fire on discrete save/delete actions (never
+  // per-keystroke), so pushing the full current array each time is cheap
+  // and keeps every mutation site above untouched.
   useEffect(() => {
-    if (hydrated) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(experiences))
+    if (hydrated) syncExperiences(experiences).catch(() => toast("Couldn't save — check your connection"))
   }, [experiences, hydrated])
 
   useEffect(() => {
-    if (hydrated) window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile))
+    if (hydrated) syncProfile(profile).catch(() => toast("Couldn't save your profile — check your connection"))
   }, [profile, hydrated])
 
   const selected = experiences.find((item) => item.id === selectedId)
@@ -105,22 +147,22 @@ export default function Home() {
     const item = editingId
       ? { ...draft, id, aiSuggestedFields: [] }
       : (() => {
-          const auto = autoFillExperience(draft.description, profile)
-          return {
-            ...draft,
-            id,
-            title: auto.title,
-            date: auto.date,
-            tags: auto.tags,
-            ...(auto.metadata ? { metadata: auto.metadata } : {}),
-            aiSuggestedFields: [
-              "title",
-              "date",
-              ...(auto.tags.length ? ["tags"] : []),
-              ...(auto.metadata ? ["company"] : []),
-            ],
-          }
-        })()
+        const auto = autoFillExperience(draft.description, profile)
+        return {
+          ...draft,
+          id,
+          title: auto.title,
+          date: auto.date,
+          tags: auto.tags,
+          ...(auto.metadata ? { metadata: auto.metadata } : {}),
+          aiSuggestedFields: [
+            "title",
+            "date",
+            ...(auto.tags.length ? ["tags"] : []),
+            ...(auto.metadata ? ["company"] : []),
+          ],
+        }
+      })()
     setExperiences((current) =>
       editingId
         ? current.map((experience) => (experience.id === id ? { ...experience, ...item } : experience))
@@ -170,20 +212,20 @@ export default function Home() {
         item.id !== selectedId
           ? item
           : {
-              ...item,
-              structured: { situation: d.situation, challenge: d.challenge, role: d.role, actions: d.actions, outcome: d.outcome },
-              collaborators: d.collaborators.split(",").map((name) => name.trim()).filter(Boolean),
-              metadata: {
-                company: d.company,
-                project: d.project,
-                dateEnd: d.dateEnd,
-                team: d.team,
-                scopeUsers: d.scopeUsers,
-                scopeRevenue: d.scopeRevenue,
-                scopeSystems: d.scopeSystems,
-                scopeTeamSize: d.scopeTeamSize,
-              },
-            }
+            ...item,
+            structured: { situation: d.situation, challenge: d.challenge, role: d.role, actions: d.actions, outcome: d.outcome },
+            collaborators: d.collaborators.split(",").map((name) => name.trim()).filter(Boolean),
+            metadata: {
+              company: d.company,
+              project: d.project,
+              dateEnd: d.dateEnd,
+              team: d.team,
+              scopeUsers: d.scopeUsers,
+              scopeRevenue: d.scopeRevenue,
+              scopeSystems: d.scopeSystems,
+              scopeTeamSize: d.scopeTeamSize,
+            },
+          }
       )
     )
     setScreen("detail")
@@ -301,10 +343,10 @@ export default function Home() {
         item.id !== selected.id
           ? item
           : {
-              ...item,
-              metadata: { ...item.metadata, company },
-              aiSuggestedFields: (item.aiSuggestedFields || []).filter((field) => field !== "company"),
-            }
+            ...item,
+            metadata: { ...item.metadata, company },
+            aiSuggestedFields: (item.aiSuggestedFields || []).filter((field) => field !== "company"),
+          }
       )
     )
     notify("Company updated")
@@ -356,13 +398,13 @@ export default function Home() {
 
   const dismissNudge = () => {
     setNudgeDismissed(true)
-    window.localStorage.setItem(NUDGE_STORAGE_KEY, "true")
   }
 
   return (
     <div className="flex min-h-screen">
-      <AppSidebar screen={screen} setScreen={setScreen} onSettingsClick={startProfile} />
-      <main className="mx-auto w-[min(1360px,calc(100%-122px))] px-3 pt-13.5 pb-15 max-[900px]:w-[calc(100%-82px)] max-[900px]:pt-8 max-[600px]:w-full max-[600px]:px-3.5 max-[600px]:pt-6">
+      <AppSidebar screen={screen} setScreen={setScreen} onSettingsClick={startProfile} profile={profile} avatarUrl={avatarUrl} />
+      <MobileNav screen={screen} setScreen={setScreen} onSettingsClick={startProfile} profile={profile} avatarUrl={avatarUrl} />
+      <main className="mx-auto w-[min(1360px,calc(100%-122px))] px-3 pt-13.5 pb-15 max-[900px]:w-[calc(100%-82px)] max-[900px]:pt-8 max-[600px]:w-full max-[600px]:px-3.5 max-[600px]:pt-6 max-[600px]:pb-24">
         <header className="mx-2 mb-8 flex items-start justify-between gap-7.5 max-[600px]:block max-[600px]:mb-5.5">
           <div>
             <p className="mb-1.75 text-[11px] font-bold tracking-[.11em] text-(--color-muted-fg)">
@@ -373,11 +415,12 @@ export default function Home() {
             </h1>
           </div>
           {screen === "capture" ? (
-            <Button variant="ghost" className="mt-2" onClick={() => setScreen("bank")}>
+            <Button variant="ghost" className="mt-4" onClick={() => setScreen("bank")}>
               View career bank <ArrowRight size={15} />
             </Button>
           ) : screen === "bank" ? (
             <Button
+              className="mt-4 "
               onClick={() => {
                 setDraft(blankDraft)
                 setEditingId(null)
@@ -388,7 +431,7 @@ export default function Home() {
               Add new entry
             </Button>
           ) : (
-            <Button variant="ghost" className="mt-2" onClick={() => setScreen("bank")}>
+            <Button variant="ghost" className="mt-4" onClick={() => setScreen("bank")}>
               <ArrowLeft size={15} />
               Back to Career Bank
             </Button>
@@ -459,22 +502,24 @@ export default function Home() {
         {screen === "bank" && (
           <section className="mx-2 grid grid-cols-1" aria-label="Experience capture workspace">
             {!profile.workHistory.length && !nudgeDismissed && (
-              <div className="mb-4 flex items-center gap-3 rounded-xl border border-(--color-tag-border) bg-(--color-tag-bg) px-4 py-3">
+              <div className="mb-4 md:flex items-center gap-3 rounded-xl border border-(--color-tag-border) bg-(--color-tag-bg) px-4 py-3">
                 <p className="m-0 flex-1 text-[13px] text-(--color-tag-fg)">
                   Add your work history so entries can be matched to where they happened — e.g. a story about
                   a security audit automatically linked to your time at that company.
                 </p>
-                <Button size="sm" onClick={startOnboarding}>
-                  Add work history
-                </Button>
-                <button
-                  type="button"
-                  onClick={dismissNudge}
-                  aria-label="Dismiss"
-                  className="grid h-7 w-7 flex-none place-items-center rounded-lg text-(--color-tag-fg) hover:bg-white/60"
-                >
-                  <X size={14} />
-                </button>
+                <div className="mt-4 flex justify-between align-items-center md:flex-none md:mt-0">
+                  <Button size="sm" onClick={startOnboarding}>
+                    Add work history
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={dismissNudge}
+                    aria-label="Dismiss"
+                    className="grid h-7 w-7 flex-none place-items-center rounded-lg text-(--color-tag-fg) hover:bg-white/60"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
               </div>
             )}
             <ExperienceBank

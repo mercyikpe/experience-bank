@@ -17,7 +17,7 @@ export const tags = [
 
 export const starterExperiences: Experience[] = [
   {
-    id: "audience-engine",
+    id: "3ddf1fee-3de6-4f2f-bf3d-8fa661dbd70b",
     title: "Optimized Audience Engine Queries",
     description:
       "Investigated slow queries on the Audience Engine. Found a data skew issue in crowd tables causing cartesian joins. Optimized schema, added indexes, and improved query patterns.",
@@ -27,7 +27,7 @@ export const starterExperiences: Experience[] = [
     tags: ["Performance", "Backend", "Problem Solving", "Customer Impact"],
   },
   {
-    id: "event-migration",
+    id: "a93b3ac6-5e6b-4517-b7f5-164cef4fc7be",
     title: "Led Migration to Event-Driven Architecture",
     description:
       "Coordinated a staged migration from a synchronous workflow to an event-driven architecture, partnering with platform and product teams to protect customer-facing reliability.",
@@ -37,7 +37,7 @@ export const starterExperiences: Experience[] = [
     tags: ["Leadership", "Systems Design", "Collaboration"],
   },
   {
-    id: "outage",
+    id: "9aaf81e0-a06f-486a-88b9-fcdc09b4d9f1",
     title: "Handled Production Outage Root Cause",
     description:
       "Led incident response for a production outage, established customer communication, identified the root cause, and introduced monitoring to prevent regression.",
@@ -46,7 +46,7 @@ export const starterExperiences: Experience[] = [
     tags: ["Ownership", "Reliability", "Communication"],
   },
   {
-    id: "mentoring",
+    id: "6f0eab5b-25b1-4e86-8d5a-85c95d3ec61d",
     title: "Mentored Two Engineers to Level Up",
     description:
       "Created a structured mentorship plan with regular pairing sessions, scoped project ownership, and feedback routines for two growing engineers.",
