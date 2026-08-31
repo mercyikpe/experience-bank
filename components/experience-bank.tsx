@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Sparkles } from "lucide-react"
+import { FileUp, Search, Sparkles } from "lucide-react"
 import { formatDate } from "@/lib/data"
 import { getCompletenessColor } from "@/lib/completeness"
 import type { Experience } from "@/lib/types"
@@ -83,6 +83,15 @@ export function ExperienceBank({
                 <p className="m-0 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-bold">
                   {item.enrichmentStatus === "pending" ? item.description.trim().slice(0, 60) || item.title : item.title}
                 </p>
+                {item.source === "resume" && (
+                  <span
+                    className="flex flex-none items-center gap-1 rounded-full bg-[#f2f0ff] px-1.75 py-0.5 text-[9px] font-semibold text-(--color-accent)"
+                    title="Drafted from an imported resume — worth fleshing out"
+                  >
+                    <FileUp size={9} />
+                    Resume
+                  </span>
+                )}
                 <time className="ml-auto whitespace-nowrap text-[10px] text-[#8a91a1]">
                   {formatDate(item.date)}
                 </time>

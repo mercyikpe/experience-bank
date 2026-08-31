@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowRight, Pencil, Sparkles, Trash2 } from "lucide-react"
+import { ArrowRight, FileUp, Pencil, Sparkles, Trash2 } from "lucide-react"
 import { formatDate } from "@/lib/data"
 import { getCompletenessFlags, getCompletenessScore } from "@/lib/completeness"
 import type { Experience, StructuredFields } from "@/lib/types"
@@ -79,6 +79,7 @@ export function ExperienceDetail({
   const score = getCompletenessScore(experience)
   const flags = getCompletenessFlags(experience)
   const hasAnyStructure = score > 0
+  const hasDraftStructure = Object.values(experience.aiDraftStructured || {}).some((value) => value && value.trim())
   const scopeEntries = Object.entries(SCOPE_LABELS).filter(([key]) => metadata[key as keyof typeof metadata]?.trim())
   const dateRange = [formatDate(experience.date), metadata.dateEnd ? formatDate(metadata.dateEnd) : null]
     .filter(Boolean)
@@ -98,6 +99,13 @@ export function ExperienceDetail({
         <h2 className={`my-2.25 text-2xl tracking-[-.03em] ${aiSuggested.length > 0 ? "mb-1" : "mb-4"}`}>
           {experience.title}
         </h2>
+
+        {experience.source === "resume" && (
+          <p className="m-0 mb-1.5 flex items-center gap-1.25 text-[11px] font-semibold text-(--color-accent)">
+            <FileUp size={11} />
+            From your resume — worth fleshing out below before you rely on it.
+          </p>
+        )}
 
         {enriching ? (
           <p className="m-0 mb-4 flex items-center gap-1.25 text-[11px] text-(--color-accent)">
@@ -284,7 +292,9 @@ export function ExperienceDetail({
         <p className="mb-4.5 text-xs leading-normal text-(--color-subtle-fg)">
           {hasAnyStructure
             ? `${score}% complete — keep filling this in for stronger STAR stories later.`
-            : "Add context, ownership, actions, and outcome to strengthen this story."}
+            : hasDraftStructure
+              ? "AI drafted a starting point from your capture — review and adjust it."
+              : "Add context, ownership, actions, and outcome to strengthen this story."}
         </p>
         <Button className="mb-4.5 w-full" onClick={onComplete}>
           {hasAnyStructure ? "Edit details" : "Complete this experience"} <ArrowRight size={14} />

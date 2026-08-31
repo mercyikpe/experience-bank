@@ -55,6 +55,9 @@ export const experiences = pgTable("experiences", {
   // experience" — additive on top of the raw capture, so it stays nullable
   // and partial rather than a fixed set of required columns.
   structured: jsonb("structured").$type<Partial<StructuredFields>>(),
+  // AI's first-pass Situation/Challenge/Role/Actions guess from enrichment,
+  // used only to seed "Complete this experience" — never shown as-is.
+  aiDraftStructured: jsonb("ai_draft_structured").$type<Partial<Omit<StructuredFields, "outcome">>>(),
   collaborators: text("collaborators")
     .array()
     .notNull()
@@ -68,6 +71,9 @@ export const experiences = pgTable("experiences", {
     .default(sql`ARRAY[]::text[]`),
   // "pending" while enrichment is in flight, "done" once resolved.
   enrichmentStatus: text("enrichment_status").notNull().default("done"),
+  // Where this entry came from — null for a normal capture, "resume" for
+  // one seeded from an imported CV. See Experience["source"] in types.ts.
+  source: text("source"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })

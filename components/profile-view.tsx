@@ -58,10 +58,9 @@ function RoleCard({
                 type="button"
                 key={experience.id}
                 onClick={() => onSelectExperience(experience.id)}
-                className="flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors hover:bg-(--color-tag-bg)"
+                className="w-full rounded-lg px-2.5 py-2 text-left text-[13px] text-(--color-body-fg) transition-colors hover:bg-(--color-tag-bg)"
               >
-                <span className="truncate text-(--color-body-fg)">{experience.title}</span>
-                <span className="flex-none text-[11px] text-(--color-faint-fg)">{formatDate(experience.date)}</span>
+                <span className="block truncate">{experience.title}</span>
               </button>
             ))}
           </div>

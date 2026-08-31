@@ -80,11 +80,13 @@ export async function getInitialData(): Promise<{
       date: row.date,
       tags: row.tags,
       structured: row.structured ?? undefined,
+      aiDraftStructured: row.aiDraftStructured ?? undefined,
       collaborators: row.collaborators,
       metadata: row.metadata ?? undefined,
       starStories: storiesByExperience.get(row.id),
       aiSuggestedFields: row.aiSuggestedFields,
       enrichmentStatus: row.enrichmentStatus === "pending" ? "pending" : "done",
+      source: row.source === "resume" ? "resume" : undefined,
     }))
 
   const profile: UserProfile = {
@@ -133,10 +135,12 @@ export async function syncExperiences(experiences: Experience[]): Promise<void> 
           date: exp.date,
           tags: exp.tags,
           structured: exp.structured ?? null,
+          aiDraftStructured: exp.aiDraftStructured ?? null,
           collaborators: exp.collaborators ?? [],
           metadata: exp.metadata ?? null,
           aiSuggestedFields: exp.aiSuggestedFields ?? [],
           enrichmentStatus: exp.enrichmentStatus ?? "done",
+          source: exp.source ?? null,
         })
         .onConflictDoUpdate({
           target: experiencesTable.id,
@@ -147,10 +151,12 @@ export async function syncExperiences(experiences: Experience[]): Promise<void> 
             date: exp.date,
             tags: exp.tags,
             structured: exp.structured ?? null,
+            aiDraftStructured: exp.aiDraftStructured ?? null,
             collaborators: exp.collaborators ?? [],
             metadata: exp.metadata ?? null,
             aiSuggestedFields: exp.aiSuggestedFields ?? [],
             enrichmentStatus: exp.enrichmentStatus ?? "done",
+            source: exp.source ?? null,
             updatedAt: new Date(),
           },
         })

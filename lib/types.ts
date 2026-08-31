@@ -50,6 +50,15 @@ export type Experience = {
   // "pending" while enrichment is in flight, "done" once resolved.
   // Undefined is treated as "done" (pre-existing rows, edits).
   enrichmentStatus?: "pending" | "done"
+  // First-pass Situation/Challenge/Role/Actions guesses from AI enrichment,
+  // used to seed "Complete this experience" instead of starting blank.
+  // Never shown or edited directly — `structured` is still the source of
+  // truth once the person starts filling that flow in.
+  aiDraftStructured?: Partial<Omit<StructuredFields, "outcome">>
+  // Where this entry came from. Undefined/omitted means a normal capture.
+  // "resume" drives the "From resume — worth fleshing out" treatment on
+  // entries seeded from an imported CV rather than typed/spoken by hand.
+  source?: "resume"
 }
 
 export type Draft = {
@@ -81,8 +90,6 @@ export type UserProfile = {
   workHistory: WorkHistoryEntry[]
   // Later phases: targetRoles?: string[]; skills?: string[]; resumeText?: string
 }
-
-export type Screen = "capture" | "bank" | "detail" | "complete" | "star" | "onboarding" | "profile"
 
 export type CompletenessTone = "warning" | "success" | "info"
 

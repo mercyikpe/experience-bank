@@ -1,6 +1,7 @@
 "use client"
 
-import { ArrowRight, Plus, Sparkles, Trash2 } from "lucide-react"
+import { useRef } from "react"
+import { ArrowRight, FileUp, Loader2, Plus, Sparkles, Trash2 } from "lucide-react"
 import type { UserProfile, WorkHistoryEntry } from "@/lib/types"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,6 +13,8 @@ export function OnboardingForm({
   addRow,
   updateRow,
   removeRow,
+  onImportResume,
+  importingResume,
   onSave,
   onCancel,
 }: {
@@ -20,9 +23,12 @@ export function OnboardingForm({
   addRow: () => void
   updateRow: (id: string, field: keyof WorkHistoryEntry, value: string | null) => void
   removeRow: (id: string) => void
+  onImportResume: (file: File) => void
+  importingResume: boolean
   onSave: (event: React.FormEvent) => void
   onCancel: () => void
 }) {
+  const resumeInputRef = useRef<HTMLInputElement>(null)
   return (
     <Card className="structure-card mx-2 mb-8 max-w-190 p-7">
       <div className="flex items-center gap-3">
@@ -61,9 +67,32 @@ export function OnboardingForm({
           </label>
         </div>
 
-        <h3 className="mt-6.5 mb-3.5 border-t border-(--color-border-hairline) pt-4.5 text-xs tracking-[.06em] text-(--color-subtle-fg) uppercase">
-          Work history
-        </h3>
+        <div className="mt-6.5 mb-3.5 flex items-center justify-between border-t border-(--color-border-hairline) pt-4.5">
+          <h3 className="m-0 text-xs tracking-[.06em] text-(--color-subtle-fg) uppercase">Work history</h3>
+          <div>
+            <input
+              ref={resumeInputRef}
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0]
+                if (file) onImportResume(file)
+                event.target.value = ""
+              }}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              disabled={importingResume}
+              onClick={() => resumeInputRef.current?.click()}
+            >
+              {importingResume ? <Loader2 size={13} className="animate-spin" /> : <FileUp size={13} />}
+              {importingResume ? "Reading resume…" : "Import from resume"}
+            </Button>
+          </div>
+        </div>
 
         {draft.workHistory.length ? (
           <div className="mb-4.25 grid gap-4">

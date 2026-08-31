@@ -15,6 +15,20 @@
       "when": 1788069876133,
       "tag": "0001_round_mister_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788207850845,
+      "tag": "0002_regular_stick",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788209283561,
+      "tag": "0003_free_tag",
+      "breakpoints": true
     }
   ]
 }

@@ -1,45 +1,41 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Archive, Home } from "lucide-react"
-import type { Screen, UserProfile } from "@/lib/types"
+import type { UserProfile } from "@/lib/types"
 import { cn, initials } from "@/lib/utils"
 
 export function MobileNav({
-  screen,
-  setScreen,
-  onSettingsClick,
   profile,
   avatarUrl,
 }: {
-  screen: Screen
-  setScreen: (screen: Screen) => void
-  onSettingsClick: () => void
   profile: UserProfile
   avatarUrl: string | null
 }) {
-  const bankActive = screen === "bank" || screen === "detail" || screen === "complete" || screen === "star"
-  const profileActive = screen === "onboarding" || screen === "profile"
+  const pathname = usePathname()
+  const captureActive = pathname === "/"
+  const bankActive = pathname === "/bank" || pathname.startsWith("/experience")
+  const profileActive = pathname === "/profile" || pathname === "/onboarding"
 
   return (
     <nav
       aria-label="Main navigation"
       className="fixed inset-x-0 bottom-0 z-50 hidden items-center justify-around border-t border-(--color-sidebar-hover) bg-(--color-sidebar) px-4 py-2 text-(--color-sidebar-fg) pb-[calc(0.5rem+env(safe-area-inset-bottom))] max-[600px]:flex"
     >
-      <button
-        type="button"
-        onClick={() => setScreen("capture")}
+      <Link
+        href="/"
         aria-label="Quick capture"
         className={cn(
           "grid h-11 w-11 place-items-center rounded-[10px] text-(--color-sidebar-muted) transition-colors",
-          screen === "capture" && "bg-(--color-sidebar-hover) text-white"
+          captureActive && "bg-(--color-sidebar-hover) text-white"
         )}
       >
         <Home size={20} />
-      </button>
-      <button
-        type="button"
-        onClick={() => setScreen("bank")}
+      </Link>
+      <Link
+        href="/bank"
         aria-label="Career Bank"
         className={cn(
           "grid h-11 w-11 place-items-center rounded-[10px] text-(--color-sidebar-muted) transition-colors",
@@ -47,10 +43,9 @@ export function MobileNav({
         )}
       >
         <Archive size={20} />
-      </button>
-      <button
-        type="button"
-        onClick={onSettingsClick}
+      </Link>
+      <Link
+        href="/profile"
         aria-label="Your profile"
         className={cn(
           "grid h-8.25 w-8.25 flex-none place-items-center rounded-full border-2 text-[11px] font-semibold transition-colors",
@@ -64,7 +59,7 @@ export function MobileNav({
         ) : (
           initials(profile.name)
         )}
-      </button>
+      </Link>
     </nav>
   )
 }
