@@ -1,25 +1,9 @@
 "use server"
 
-// Real (LLM-backed) enrichment for Quick Capture, sitting alongside — not
-// replacing — the deterministic heuristics in lib/autofill.ts. Per the
-// product doc's §10 decision, the deterministic version stayed the default
-// until real usage showed it wasn't good enough; this is that revisit,
-// scoped to the three fields most likely to benefit from actual language
-// understanding: title, tags, and company matching, plus impact/metrics
-// extraction (which the deterministic version never implemented at all).
-// Date inference stays deterministic — regex-based explicit-date parsing
-// doesn't need an LLM and is called synchronously at save time either way.
-//
-// Uses the Responses API (not chat.completions) with a strict JSON schema:
-// tags and company are constrained to enums built from this call's actual
-// vocabulary/work-history, so the model can't return a tag that doesn't
-// exist or a company that isn't on file — no post-hoc string matching
-// needed for those two fields, just a fallback for defense in depth.
-//
-// This runs as a Server Action (never in the browser) so the API key never
-// reaches the client, and it re-derives the signed-in user the same way
-// every other action in this directory does, so it can't be invoked by a
-// signed-out request even though it doesn't touch the database itself.
+// LLM-backed enrichment for Quick Capture (title/tags/company/impact),
+// alongside the deterministic fallback in lib/autofill.ts. Tags/company are
+// constrained to enums via a strict JSON schema so the model can't invent
+// a tag or company that isn't on file.
 
 import OpenAI from "openai"
 import { createClient } from "@/lib/supabase/server"
@@ -78,9 +62,7 @@ function buildSchema(tagVocabulary: string[], workHistory: WorkHistoryEntry[]) {
   }
 }
 
-// Defense in depth on top of the schema's enum constraints — a model
-// swapped in via OPENAI_MODEL might not support strict schema enforcement
-// as reliably, so this never trusts the response blindly.
+// Defense in depth on top of the schema's enum constraints.
 function sanitize(raw: unknown, tagVocabulary: string[], workHistory: WorkHistoryEntry[]): EnrichmentResult {
   const parsed = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
 

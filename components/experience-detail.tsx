@@ -73,8 +73,7 @@ export function ExperienceDetail({
   const structured = experience.structured || {}
   const metadata = experience.metadata || {}
   const aiSuggested = experience.aiSuggestedFields || []
-  // An AI company match hasn't been confirmed or corrected yet — show the
-  // active "right?" prompt instead of the passive value + badge below.
+  // AI company match not yet confirmed/corrected — shows the "right?" prompt.
   const unconfirmedCompany = aiSuggested.includes("company") && Boolean(metadata.company) && !editingCompany
   const enriching = experience.enrichmentStatus === "pending"
   const score = getCompletenessScore(experience)

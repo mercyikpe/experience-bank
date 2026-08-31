@@ -13,10 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
-// Preference order for MediaRecorder's output format — webm/opus is the
-// smallest and most broadly supported (Chrome/Edge/Firefox); Safari needs
-// mp4/aac instead. Picked once per recording since browser support doesn't
-// change mid-session.
+// webm is smallest/most supported; Safari needs mp4 instead.
 function pickMimeType(): string {
   if (typeof MediaRecorder === "undefined") return ""
   return ["audio/webm", "audio/mp4", "audio/ogg"].find((type) => MediaRecorder.isTypeSupported(type)) || ""
@@ -28,14 +25,8 @@ function extensionFor(mimeType: string): string {
   return "webm"
 }
 
-/** Records one clip at a time — click to talk, click again to stop — then
- * uploads it to lib/actions/transcribe.ts for backend transcription
- * (OpenAI's gpt-transcribe, per the product doc's §5.6). Uses MediaRecorder
- * rather than the old SpeechRecognition-based approach: MediaRecorder only
- * has to record audio, not understand it, so it works in Safari/Firefox
- * too, not just Chrome/Edge — a real transcription model does the actual
- * listening, server-side. Voice and typing stay equally first-class: this
- * only ever appends to whatever text is already there, never replaces it. */
+/** Records one clip at a time, uploads it to lib/actions/transcribe.ts for
+ * backend transcription, then appends the result to the existing text. */
 function useVoiceCapture(onTranscript: (text: string) => void) {
   const [recording, setRecording] = useState(false)
   const [transcribing, setTranscribing] = useState(false)

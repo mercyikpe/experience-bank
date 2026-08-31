@@ -66,11 +66,7 @@ export const experiences = pgTable("experiences", {
     .array()
     .notNull()
     .default(sql`ARRAY[]::text[]`),
-  // "pending" while lib/actions/enrich.ts's async LLM call is in flight for
-  // a freshly-saved capture, "done" once it resolves (or falls back to the
-  // deterministic heuristics on failure). Defaults to "done" so existing
-  // rows — saved before this column existed — are never mistaken for
-  // stuck-enriching.
+  // "pending" while enrichment is in flight, "done" once resolved.
   enrichmentStatus: text("enrichment_status").notNull().default("done"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

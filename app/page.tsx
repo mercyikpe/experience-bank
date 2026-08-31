@@ -136,11 +136,8 @@ export default function Home() {
     notify("Suggested tags added — adjust anything you like")
   }
 
-  // Fires the real (LLM-backed) enrichment call for a freshly-saved capture
-  // and folds the result back into that one experience when it resolves.
-  // Runs after the save has already navigated the person to the detail
-  // view — this is the async half of saveExperience below, split out so
-  // save itself can stay a plain synchronous state update.
+  // Fires the LLM enrichment call and folds the result into the experience
+  // once it resolves — the async half of saveExperience below.
   const runEnrichment = (id: string, description: string, workHistory: typeof profile.workHistory) => {
     enrichExperience(description, tagVocabulary, workHistory)
       .then((result) => {
@@ -167,9 +164,7 @@ export default function Home() {
       })
       .catch((error) => {
         console.error("AI enrichment failed, falling back to deterministic auto-fill", error)
-        // Never leave an experience stuck "enriching…" — fall back to the
-        // same deterministic heuristics Quick Capture used before this was
-        // built, so the field still gets filled in, just less precisely.
+        // Fall back to the deterministic heuristics so it never gets stuck "enriching…".
         const auto = autoFillExperience(description, profile)
         setExperiences((current) =>
           current.map((experience) =>
@@ -197,12 +192,8 @@ export default function Home() {
     event.preventDefault()
 
     if (editingId) {
-      // Edits come from the full form, which already collects every field
-      // explicitly, so those are used as typed instead of re-guessed.
-      // Editing is an implicit confirmation of everything in that form, so
-      // it clears any "AI guessed this" flags from a previous auto-fill
-      // pass and can't be mid-enrichment (enrichment only ever starts from
-      // a brand-new capture).
+      // Edits use the full form as typed — editing is an implicit
+      // confirmation, so it clears any "AI guessed this" flags.
       const id = editingId
       const item = { ...draft, id, aiSuggestedFields: [], enrichmentStatus: "done" as const }
       setExperiences((current) => current.map((experience) => (experience.id === id ? { ...experience, ...item } : experience)))
@@ -214,12 +205,8 @@ export default function Home() {
       return
     }
 
-    // A brand-new capture: save instantly with just what's deterministic
-    // and free (date inference is a cheap regex match, so there's no
-    // reason to make that async too) and a plain placeholder title, then
-    // kick off the real AI enrichment in the background. The experience
-    // shows up right away with an "enriching…" state; title/tags/company/
-    // impact fill in moments later when runEnrichment's call resolves.
+    // A brand-new capture: save instantly with a placeholder title and
+    // deterministic date, then enrich in the background.
     const id = crypto.randomUUID()
     const date = inferDate(draft.description)
     const placeholderTitle = draft.description.trim().replace(/\s+/g, " ").slice(0, 60) || "New experience"
@@ -397,11 +384,8 @@ export default function Home() {
     notify("Experience deleted")
   }
 
-  // A lightweight correction path for a wrong (or missing) AI company match
-  // — lets someone fix it right from the detail view instead of routing
-  // through the full "Complete this experience" flow just to change one
-  // field. Also clears the "AI guessed this" flag, since a manual edit is
-  // itself the confirmation.
+  // Lets someone fix a wrong/missing AI company match from the detail
+  // view; clears the "AI guessed this" flag since editing confirms it.
   const updateCompany = (company: string) => {
     if (!selected) return
     setExperiences((current) =>
@@ -418,9 +402,8 @@ export default function Home() {
     notify("Company updated")
   }
 
-  // "Yes, that's right" on the AI company-match prompt — same as a manual
-  // edit for bookkeeping purposes (clears the "unconfirmed" flag) but
-  // leaves the value untouched, since there's nothing to correct.
+  // "Yes, that's right" on the AI company-match prompt — clears the
+  // unconfirmed flag but leaves the value untouched.
   const confirmCompany = () => {
     if (!selected) return
     setExperiences((current) =>

@@ -1,21 +1,14 @@
 "use server"
 
-// Backend audio transcription for Quick Capture's voice option — per the
-// product doc's §5.6 plan, replacing the old browser-only SpeechRecognition
-// approach (Chrome/Edge only) with MediaRecorder on the client (broadly
-// supported, including Safari/Firefox) and a real transcription model here
-// on the server. Mirrors lib/actions/enrich.ts's auth pattern: re-derive
-// the signed-in user from the session so this can't be invoked by a
-// signed-out request, and never let the API key reach the client.
+// Backend audio transcription for Quick Capture's voice option (replaces
+// the old browser-only SpeechRecognition approach, which didn't work in
+// Safari/Firefox). Same auth pattern as lib/actions/enrich.ts.
 
 import OpenAI from "openai"
 import { createClient } from "@/lib/supabase/server"
 
-// The current Whisper successor for uploaded-file transcription (as
-// opposed to gpt-live-transcribe, which is for continuous streaming and
-// isn't needed here — this stays record-then-transcribe, not live).
-// Override with OPENAI_TRANSCRIBE_MODEL in .env.local without a code
-// change, mirroring how OPENAI_MODEL overrides the enrichment model.
+// Whisper's successor for uploaded-file transcription. Override via
+// OPENAI_TRANSCRIBE_MODEL if needed.
 const DEFAULT_MODEL = "gpt-transcribe"
 
 async function requireUser() {
