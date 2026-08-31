@@ -435,6 +435,16 @@ export default function Home() {
     setScreen("detail")
   }
 
+  // Opens Quick Capture pre-seeded with an explicit company mention, so
+  // the new entry lands linked to this role via the same "strong signal"
+  // path (explicit mention) both matchCompany() and the AI enrichment call
+  // already trust — no separate "force this company" plumbing needed.
+  const startCaptureForCompany = (company: string) => {
+    setDraft({ ...blankDraft, description: company.trim() ? `At ${company.trim()}, ` : "" })
+    setEditingId(null)
+    setScreen("capture")
+  }
+
   const setProfileField = (field: "name" | "currentRole", value: string) =>
     setProfileDraft((current) => ({ ...current, [field]: value }))
 
@@ -529,6 +539,7 @@ export default function Home() {
             experiences={experiences}
             onEdit={startOnboarding}
             onSelectExperience={viewExperienceFromProfile}
+            onAddEntry={startCaptureForCompany}
           />
         )}
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowRight, Briefcase, Pencil, Sparkles } from "lucide-react"
+import { ArrowRight, Briefcase, Pencil, Plus, Sparkles } from "lucide-react"
 import { formatDate } from "@/lib/data"
 import { initials } from "@/lib/utils"
 import type { Experience, UserProfile, WorkHistoryEntry } from "@/lib/types"
@@ -20,10 +20,12 @@ function RoleCard({
   row,
   entries,
   onSelectExperience,
+  onAddEntry,
 }: {
   row: WorkHistoryEntry
   entries: Experience[]
   onSelectExperience: (id: string) => void
+  onAddEntry: (company: string) => void
 }) {
   return (
     <div className="rounded-xl border border-(--color-border-hairline) p-4">
@@ -36,9 +38,19 @@ function RoleCard({
       </div>
 
       <div className="mt-3 border-t border-(--color-border-hairline) pt-3">
-        <p className="mb-2 text-[11px] font-bold tracking-[.06em] text-(--color-subtle-fg) uppercase">
-          Entries from {row.company || "this role"}
-        </p>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <p className="m-0 text-[11px] font-bold tracking-[.06em] text-(--color-subtle-fg) uppercase">
+            Entries from {row.company || "this role"}
+          </p>
+          <button
+            type="button"
+            onClick={() => onAddEntry(row.company)}
+            className="flex flex-none items-center gap-1 border-0 bg-transparent p-0 text-[11px] font-semibold text-(--color-accent)"
+          >
+            <Plus size={12} />
+            Add entry
+          </button>
+        </div>
         {entries.length ? (
           <div className="grid gap-1.5">
             {entries.map((experience) => (
@@ -68,11 +80,13 @@ export function ProfileView({
   experiences,
   onEdit,
   onSelectExperience,
+  onAddEntry,
 }: {
   profile: UserProfile
   experiences: Experience[]
   onEdit: () => void
   onSelectExperience: (id: string) => void
+  onAddEntry: (company: string) => void
 }) {
   const hasProfile = Boolean(profile.name || profile.currentRole || profile.workHistory.length)
 
@@ -152,6 +166,7 @@ export function ProfileView({
                   (experience) => row.company.trim() && normalize(experience.metadata?.company || "") === normalize(row.company)
                 )}
                 onSelectExperience={onSelectExperience}
+                onAddEntry={onAddEntry}
               />
             ))}
           </div>
