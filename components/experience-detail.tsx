@@ -35,6 +35,7 @@ export function ExperienceDetail({
   onEditStar,
   onDeleteStar,
   onUpdateCompany,
+  onConfirmCompany,
 }: {
   experience?: Experience
   onEdit: () => void
@@ -44,6 +45,7 @@ export function ExperienceDetail({
   onEditStar: (id: string) => void
   onDeleteStar: (id: string) => void
   onUpdateCompany: (company: string) => void
+  onConfirmCompany: () => void
 }) {
   const [editingCompany, setEditingCompany] = useState(false)
   const [companyDraft, setCompanyDraft] = useState("")
@@ -71,6 +73,10 @@ export function ExperienceDetail({
   const structured = experience.structured || {}
   const metadata = experience.metadata || {}
   const aiSuggested = experience.aiSuggestedFields || []
+  // An AI company match hasn't been confirmed or corrected yet — show the
+  // active "right?" prompt instead of the passive value + badge below.
+  const unconfirmedCompany = aiSuggested.includes("company") && Boolean(metadata.company) && !editingCompany
+  const enriching = experience.enrichmentStatus === "pending"
   const score = getCompletenessScore(experience)
   const flags = getCompletenessFlags(experience)
   const hasAnyStructure = score > 0
@@ -94,11 +100,18 @@ export function ExperienceDetail({
           {experience.title}
         </h2>
 
-        {aiSuggested.length > 0 && (
-          <p className="m-0 mb-4 flex items-center gap-1.25 text-[11px] text-(--color-faint-fg)">
-            <Sparkles size={11} />
-            Some of this was filled in automatically — use &quot;Edit capture&quot; to fix anything that&apos;s off.
+        {enriching ? (
+          <p className="m-0 mb-4 flex items-center gap-1.25 text-[11px] text-(--color-accent)">
+            <Sparkles size={11} className="animate-pulse" />
+            We&apos;re filling in the title, tags, company, and impact — this&apos;ll update in a moment.
           </p>
+        ) : (
+          aiSuggested.length > 0 && (
+            <p className="m-0 mb-4 flex items-center gap-1.25 text-[11px] text-(--color-faint-fg)">
+              <Sparkles size={11} />
+              Some of this was filled in automatically — use &quot;Edit capture&quot; to fix anything that&apos;s off.
+            </p>
+          )
         )}
 
         <CompletenessBadges flags={flags} />
@@ -144,6 +157,8 @@ export function ExperienceDetail({
         <div className="flex flex-wrap gap-1.75">
           {experience.tags.length ? (
             experience.tags.map((tag) => <Badge key={tag}>{tag}</Badge>)
+          ) : enriching ? (
+            <p className="m-0 text-xs italic text-(--color-faint-fg)">Enriching…</p>
           ) : (
             <p className="m-0 text-xs italic text-[#a3a9b8]">Not added yet.</p>
           )}
@@ -165,7 +180,7 @@ export function ExperienceDetail({
         <div className="mb-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-(--color-subtle-fg)">Company</span>
-            {!editingCompany && (
+            {!editingCompany && !unconfirmedCompany && !enriching && (
               <button
                 type="button"
                 onClick={() => {
@@ -203,15 +218,38 @@ export function ExperienceDetail({
                 Cancel
               </button>
             </div>
+          ) : unconfirmedCompany ? (
+            <div className="mt-1.5 rounded-lg border border-(--color-tag-border) bg-(--color-tag-bg) p-2.5">
+              <p className="m-0 mb-2 flex items-start gap-1.25 text-[11px] leading-[1.4] text-(--color-tag-fg)">
+                <Sparkles size={11} className="mt-0.5 flex-none" />
+                We think this was at <strong>{metadata.company}</strong> — right?
+              </p>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={onConfirmCompany}
+                  className="rounded-md bg-(--color-accent) px-2.5 py-1 text-[11px] font-semibold text-white"
+                >
+                  Yes, that&apos;s right
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCompanyDraft(metadata.company || "")
+                    setEditingCompany(true)
+                  }}
+                  className="rounded-md border border-(--color-tag-border) bg-transparent px-2.5 py-1 text-[11px] font-semibold text-(--color-tag-fg)"
+                >
+                  Not quite
+                </button>
+              </div>
+            </div>
           ) : metadata.company ? (
             <div className="mt-0.75 flex items-center gap-1.5">
               <span className="text-xs text-[#454d5f]">{metadata.company}</span>
-              {aiSuggested.includes("company") && (
-                <Badge variant="info" className="!px-1.5 !py-0.5 !text-[9px]">
-                  AI guess
-                </Badge>
-              )}
             </div>
+          ) : enriching ? (
+            <p className="m-0 mt-0.75 text-xs italic text-(--color-faint-fg)">Enriching…</p>
           ) : (
             <p className="m-0 mt-0.75 text-xs italic text-[#a3a9b8]">Not added yet.</p>
           )}

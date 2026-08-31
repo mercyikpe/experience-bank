@@ -47,6 +47,13 @@ export type Experience = {
   // view. Cleared once the person edits the capture, since editing is an
   // implicit confirmation of everything in that form.
   aiSuggestedFields?: string[]
+  // Async enrichment status for a freshly-saved capture: "pending" while
+  // the lib/actions/enrich.ts LLM call is in flight (title/tags/company/
+  // impact aren't filled in yet), "done" once it resolves (or falls back to
+  // the deterministic heuristics on failure). Undefined/omitted is treated
+  // as "done" — covers rows saved before this field existed and edits,
+  // which never go through async enrichment in the first place.
+  enrichmentStatus?: "pending" | "done"
 }
 
 export type Draft = {

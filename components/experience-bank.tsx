@@ -1,6 +1,6 @@
 "use client"
 
-import { Search } from "lucide-react"
+import { Search, Sparkles } from "lucide-react"
 import { formatDate } from "@/lib/data"
 import { getCompletenessColor } from "@/lib/completeness"
 import type { Experience } from "@/lib/types"
@@ -80,7 +80,9 @@ export function ExperienceBank({
                   className="mt-1.25 h-2 w-2 flex-none rounded-full"
                   style={{ background: getCompletenessColor(item) }}
                 />
-                <p className="m-0 text-[13px] font-bold">{item.title}</p>
+                <p className="m-0 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-bold">
+                  {item.enrichmentStatus === "pending" ? item.description.trim().slice(0, 60) || item.title : item.title}
+                </p>
                 <time className="ml-auto whitespace-nowrap text-[10px] text-[#8a91a1]">
                   {formatDate(item.date)}
                 </time>
@@ -89,11 +91,18 @@ export function ExperienceBank({
                 {item.description}
               </p>
               <div className="ml-5 flex flex-wrap gap-1.25">
-                {item.tags.slice(0, 3).map((tag) => (
-                  <Badge variant="mini" key={tag}>
-                    {tag}
-                  </Badge>
-                ))}
+                {item.enrichmentStatus === "pending" ? (
+                  <span className="flex items-center gap-1 text-[10px] font-semibold text-(--color-accent)">
+                    <Sparkles size={10} className="animate-pulse" />
+                    Enriching…
+                  </span>
+                ) : (
+                  item.tags.slice(0, 3).map((tag) => (
+                    <Badge variant="mini" key={tag}>
+                      {tag}
+                    </Badge>
+                  ))
+                )}
               </div>
             </article>
           ))

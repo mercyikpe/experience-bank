@@ -84,6 +84,7 @@ export async function getInitialData(): Promise<{
       metadata: row.metadata ?? undefined,
       starStories: storiesByExperience.get(row.id),
       aiSuggestedFields: row.aiSuggestedFields,
+      enrichmentStatus: row.enrichmentStatus === "pending" ? "pending" : "done",
     }))
 
   const profile: UserProfile = {
@@ -135,6 +136,7 @@ export async function syncExperiences(experiences: Experience[]): Promise<void> 
           collaborators: exp.collaborators ?? [],
           metadata: exp.metadata ?? null,
           aiSuggestedFields: exp.aiSuggestedFields ?? [],
+          enrichmentStatus: exp.enrichmentStatus ?? "done",
         })
         .onConflictDoUpdate({
           target: experiencesTable.id,
@@ -148,6 +150,7 @@ export async function syncExperiences(experiences: Experience[]): Promise<void> 
             collaborators: exp.collaborators ?? [],
             metadata: exp.metadata ?? null,
             aiSuggestedFields: exp.aiSuggestedFields ?? [],
+            enrichmentStatus: exp.enrichmentStatus ?? "done",
             updatedAt: new Date(),
           },
         })

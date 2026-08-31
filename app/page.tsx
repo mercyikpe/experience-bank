@@ -5,8 +5,9 @@ import { ArrowLeft, ArrowRight, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { blankDraft, blankProfile, blankStarDraft, blankWorkHistoryRow, emptyCompletion, starterExperiences, tags as tagVocabulary } from "@/lib/data"
 import { generateStarDraft } from "@/lib/star"
-import { autoFillExperience, inferTags } from "@/lib/autofill"
+import { autoFillExperience, inferDate, inferTags } from "@/lib/autofill"
 import { getInitialData, syncExperiences, syncProfile } from "@/lib/actions/data"
+import { enrichExperience } from "@/lib/actions/enrich"
 import type { CompletionDraft, Draft, Experience, Screen, StarDraft, UserProfile, WorkHistoryEntry } from "@/lib/types"
 import { AppSidebar } from "@/components/sidebar"
 import { MobileNav } from "@/components/mobile-nav"
@@ -135,44 +136,109 @@ export default function Home() {
     notify("Suggested tags added — adjust anything you like")
   }
 
+  // Fires the real (LLM-backed) enrichment call for a freshly-saved capture
+  // and folds the result back into that one experience when it resolves.
+  // Runs after the save has already navigated the person to the detail
+  // view — this is the async half of saveExperience below, split out so
+  // save itself can stay a plain synchronous state update.
+  const runEnrichment = (id: string, description: string, workHistory: typeof profile.workHistory) => {
+    enrichExperience(description, tagVocabulary, workHistory)
+      .then((result) => {
+        setExperiences((current) =>
+          current.map((experience) =>
+            experience.id !== id
+              ? experience
+              : {
+                ...experience,
+                title: result.title || experience.title,
+                tags: result.tags,
+                impact: result.impact || experience.impact,
+                metadata: result.company ? { ...experience.metadata, company: result.company } : experience.metadata,
+                aiSuggestedFields: [
+                  "title",
+                  ...(result.tags.length ? ["tags"] : []),
+                  ...(result.company ? ["company"] : []),
+                  ...(result.impact ? ["impact"] : []),
+                ],
+                enrichmentStatus: "done",
+              }
+          )
+        )
+      })
+      .catch((error) => {
+        console.error("AI enrichment failed, falling back to deterministic auto-fill", error)
+        // Never leave an experience stuck "enriching…" — fall back to the
+        // same deterministic heuristics Quick Capture used before this was
+        // built, so the field still gets filled in, just less precisely.
+        const auto = autoFillExperience(description, profile)
+        setExperiences((current) =>
+          current.map((experience) =>
+            experience.id !== id
+              ? experience
+              : {
+                ...experience,
+                title: auto.title || experience.title,
+                tags: auto.tags,
+                ...(auto.metadata ? { metadata: { ...experience.metadata, ...auto.metadata } } : {}),
+                aiSuggestedFields: [
+                  "title",
+                  ...(auto.tags.length ? ["tags"] : []),
+                  ...(auto.metadata ? ["company"] : []),
+                ],
+                enrichmentStatus: "done",
+              }
+          )
+        )
+        notify("Couldn't reach AI enrichment — filled in with quick heuristics instead")
+      })
+  }
+
   const saveExperience = (event: React.FormEvent) => {
     event.preventDefault()
-    const id = editingId || crypto.randomUUID()
-    // New captures come from the simplified form (description only) — the
-    // deterministic auto-fill guesses title/date/tags/company from the raw
-    // text. Edits come from the full form, which already collects every
-    // field explicitly, so those are used as typed instead of re-guessed.
-    // Editing is an implicit confirmation of everything in that form, so it
-    // clears any "AI guessed this" flags from a previous auto-fill pass.
-    const item = editingId
-      ? { ...draft, id, aiSuggestedFields: [] }
-      : (() => {
-        const auto = autoFillExperience(draft.description, profile)
-        return {
-          ...draft,
-          id,
-          title: auto.title,
-          date: auto.date,
-          tags: auto.tags,
-          ...(auto.metadata ? { metadata: auto.metadata } : {}),
-          aiSuggestedFields: [
-            "title",
-            "date",
-            ...(auto.tags.length ? ["tags"] : []),
-            ...(auto.metadata ? ["company"] : []),
-          ],
-        }
-      })()
-    setExperiences((current) =>
-      editingId
-        ? current.map((experience) => (experience.id === id ? { ...experience, ...item } : experience))
-        : [item, ...current]
-    )
+
+    if (editingId) {
+      // Edits come from the full form, which already collects every field
+      // explicitly, so those are used as typed instead of re-guessed.
+      // Editing is an implicit confirmation of everything in that form, so
+      // it clears any "AI guessed this" flags from a previous auto-fill
+      // pass and can't be mid-enrichment (enrichment only ever starts from
+      // a brand-new capture).
+      const id = editingId
+      const item = { ...draft, id, aiSuggestedFields: [], enrichmentStatus: "done" as const }
+      setExperiences((current) => current.map((experience) => (experience.id === id ? { ...experience, ...item } : experience)))
+      setSelectedId(id)
+      setDraft(blankDraft)
+      setEditingId(null)
+      setScreen("detail")
+      notify("Experience updated")
+      return
+    }
+
+    // A brand-new capture: save instantly with just what's deterministic
+    // and free (date inference is a cheap regex match, so there's no
+    // reason to make that async too) and a plain placeholder title, then
+    // kick off the real AI enrichment in the background. The experience
+    // shows up right away with an "enriching…" state; title/tags/company/
+    // impact fill in moments later when runEnrichment's call resolves.
+    const id = crypto.randomUUID()
+    const date = inferDate(draft.description)
+    const placeholderTitle = draft.description.trim().replace(/\s+/g, " ").slice(0, 60) || "New experience"
+    const item = {
+      ...draft,
+      id,
+      title: placeholderTitle,
+      date,
+      tags: [] as string[],
+      aiSuggestedFields: [] as string[],
+      enrichmentStatus: "pending" as const,
+    }
+    setExperiences((current) => [item, ...current])
     setSelectedId(id)
     setDraft(blankDraft)
     setEditingId(null)
     setScreen("detail")
-    notify(editingId ? "Experience updated" : "Experience saved to your Career Bank")
+    notify("Saved — filling in the details…")
+    runEnrichment(id, draft.description, profile.workHistory)
   }
 
   // Seeds the "Complete this experience" draft from whatever already
@@ -350,6 +416,21 @@ export default function Home() {
       )
     )
     notify("Company updated")
+  }
+
+  // "Yes, that's right" on the AI company-match prompt — same as a manual
+  // edit for bookkeeping purposes (clears the "unconfirmed" flag) but
+  // leaves the value untouched, since there's nothing to correct.
+  const confirmCompany = () => {
+    if (!selected) return
+    setExperiences((current) =>
+      current.map((item) =>
+        item.id !== selected.id
+          ? item
+          : { ...item, aiSuggestedFields: (item.aiSuggestedFields || []).filter((field) => field !== "company") }
+      )
+    )
+    notify("Got it — company confirmed")
   }
 
   // Onboarding is optional and never gates capture — it's reachable any time
@@ -550,6 +631,7 @@ export default function Home() {
               onEditStar={startEditStar}
               onDeleteStar={deleteStarStory}
               onUpdateCompany={updateCompany}
+              onConfirmCompany={confirmCompany}
             />
           </div>
         )}
