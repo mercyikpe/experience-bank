@@ -221,8 +221,9 @@ export function ExperienceDetail({
             <div className="mt-1.5 rounded-lg border border-(--color-tag-border) bg-(--color-tag-bg) p-2.5">
               <p className="m-0 mb-2 flex items-start gap-1.25 text-[11px] leading-[1.4] text-(--color-tag-fg)">
                 <Sparkles size={11} className="mt-0.5 flex-none" />
-                We think this was at <strong>{metadata.company}</strong> — right?
+                <span>We think this was at <strong>{metadata.company}</strong></span>
               </p>
+              
               <div className="flex gap-1.5">
                 <button
                   type="button"
